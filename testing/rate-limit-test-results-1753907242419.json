@@ -1,0 +1,47 @@
+{
+  "summary": {
+    "Property Creation": {
+      "successfulRequests": 5,
+      "rateLimitedRequests": 2,
+      "total": 7
+    },
+    "Search": {
+      "successfulRequests": 50,
+      "rateLimitedRequests": 2,
+      "total": 52
+    },
+    "Standard": {
+      "successfulRequests": 0,
+      "rateLimitedRequests": 2,
+      "total": 32
+    },
+    "Strict": {
+      "successfulRequests": 0,
+      "rateLimitedRequests": 2,
+      "total": 12
+    }
+  },
+  "timestamp": "2025-07-30T20:27:22.419Z",
+  "tests": [
+    {
+      "endpoint": "/api/v1/property/create-update",
+      "tierName": "Property Creation",
+      "expectedLimit": 5
+    },
+    {
+      "endpoint": "/api/v1/property/search-property",
+      "tierName": "Search",
+      "expectedLimit": 50
+    },
+    {
+      "endpoint": "/api/v1/property/getAll",
+      "tierName": "Standard",
+      "expectedLimit": 30
+    },
+    {
+      "endpoint": "/api/v1/property/delete-property",
+      "tierName": "Strict",
+      "expectedLimit": 10
+    }
+  ]
+}

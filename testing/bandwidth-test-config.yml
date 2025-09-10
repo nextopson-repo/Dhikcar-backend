@@ -1,0 +1,78 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Bandwidth warm up phase"
+    - duration: 60
+      arrivalRate: 10
+      name: "Bandwidth measurement phase"
+    - duration: 30
+      arrivalRate: 20
+      name: "Bandwidth stress phase"
+    - duration: 15
+      arrivalRate: 5
+      name: "Bandwidth cool down phase"
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Accept: 'application/json'
+
+scenarios:
+  - name: "Bandwidth Test - Property Creation"
+    weight: 100
+    flow:
+      - post:
+          url: "/api/v1/property/create-update"
+          json:
+            userId: "4ac5edc3-be6a-4e50-9dd2-5298caf5d778"
+            addressState: "Delhi"
+            addressCity: "Delhi"
+            addressLocality: "Aali"
+            imageKeys:
+              - imageKey: "property-images/temp/1753686466431-9891-38.jpg"
+                imgClassifications: "Other"
+                accurencyPercent: 0
+              - imageKey: "property-images/temp/1753686466610-7254-37.jpg"
+                imgClassifications: "Other"
+                accurencyPercent: 0
+              - imageKey: "property-images/temp/1753686466517-2568-33.jpg"
+                imgClassifications: "Other"
+                accurencyPercent: 0
+              - imageKey: "property-images/temp/1753686467661-3609-35.jpg"
+                imgClassifications: "Other"
+                accurencyPercent: 0
+              - imageKey: "property-images/temp/1753686467577-4127-36.jpg"
+                imgClassifications: "Other"
+                accurencyPercent: 0
+              - imageKey: "property-images/temp/1753686467483-9793-39.jpg"
+                imgClassifications: "Other"
+                accurencyPercent: 0
+            category: "Residential"
+            subCategory: "Flats"
+            propertyName: "Shree krishana"
+            isSale: "Sell"
+            totalBathrooms: 52
+            propertyPrice: 41
+            carpetArea: 7000
+            buildupArea: 10800
+            bhks: "1 BHK"
+            furnishing: "Unfurnished"
+            constructionStatus: "Under Construction"
+            propertyFacing: "South West"
+            ageOfTheProperty: "0-5 Yrs"
+            reraApproved: true
+            amenities: ["Parking", "Garden"]
+            unit: "sq.ft"
+            totalfloors: 10
+            yourfloor: "2"
+            agentNotes: "Good palace"
+          capture:
+            - json: "$.success"
+              as: "success"
+            - json: "$.message"
+              as: "message"
+            - json: "$.data"
+              as: "data"
+          expect:
+            - statusCode: [200, 201, 400, 429, 500] 

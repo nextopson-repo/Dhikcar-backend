@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: ${NODE_ENV:-development}
+    ports:
+      - '${PORT:-8080}:8080'
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-8080}
+      - LOCAL_DB_HOST=db
+      - LOCAL_DB_USERNAME=${LOCAL_DB_USERNAME:-root}
+      - LOCAL_DB_PASSWORD=${LOCAL_DB_PASSWORD:-password}
+      - LOCAL_DB_NAME=${LOCAL_DB_NAME:-nextdeal}
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+    command: npm run dev
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=${LOCAL_DB_PASSWORD:-password}
+      - MYSQL_DATABASE=${LOCAL_DB_NAME:-nextdeal}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  mysql-data:

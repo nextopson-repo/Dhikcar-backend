@@ -1,0 +1,179 @@
+import { Request, Response } from 'express';
+import { In } from 'typeorm';
+
+import { UserAuth } from '@/api/entity';
+import { CarDetails } from '@/api/entity/CarDetails';
+import { SavedCar } from '@/api/entity/SavedCars';
+import { AppDataSource } from '@/server';
+
+// Custom type for request user
+type RequestUser = {
+  id: string;
+  userType: 'Dealer' | 'Owner' | 'EndUser';
+  email: string;
+  mobileNumber: string;
+  isAdmin?: boolean;
+  isSold?: boolean;
+  conversion?: string;
+};
+
+export interface CarRequest extends Omit<Request, 'user'> {
+  body: {
+    carId?: string;
+    userId?: string;
+    addressState?: string;
+    addressCity?: string;
+    addressLocality?: string;
+    imageKeys?: string[];
+    category: string;
+    subCategory: string;
+    carName?: string;
+    carPrice?: number;
+    width?: number;
+    height?: number;
+    length?: number;
+    groundHeight?: number;
+    unit?: string;
+    isSold?: boolean;
+    conversion?: string;
+    // Analytics filter fields
+    dateRangeType?: 'lastMonth' | 'last3Months' | 'lastYear' | 'custom';
+    fromDate?: string; // ISO string, required if dateRangeType is 'custom'
+    toDate?: string; // ISO string, required if dateRangeType is 'custom'
+  };
+  user?: RequestUser;
+}
+
+// type CarResponseType = {
+//   id: string;
+//   userId: string;
+//   address: Address;
+//   category: string;
+//   subCategory: string;
+//   carName: string | null;
+//   isSale: boolean | null;
+//   totalBathrooms: number | null;
+//   totalRooms: number | null;
+//   carPrice: number;
+//   width: number | null;
+//   height: number | null;
+//   length: number | null;
+//   groundHeight: number | null;
+//   createdBy: string;
+//   updatedBy: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+//   isSold: boolean | null;
+//   conversion: string | null;
+// };
+
+// create saved property
+export const createSavedCar = async (req: Request, res: Response) => {
+  try {
+    const { carId, userId } = req.body;
+    if (!carId || !userId) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    const savedCarRepo = AppDataSource.getRepository(SavedCar);
+    const carRepo = AppDataSource.getRepository(CarDetails);
+
+    // First check if property exists
+    const carDetails = await carRepo.findOne({
+      where: { id: carId },
+      relations: ['carImages', 'address'],
+    });
+
+    if (!carDetails) {
+      return res.status(404).json({ message: 'Car not found' });
+    }
+
+    const savedCar = savedCarRepo.create({
+      carId,
+      ownerId: carDetails.userId,
+      userId,
+    });
+    const newCar = await savedCarRepo.save(savedCar);
+
+    return res.status(201).json({
+      message: 'Saved car created successfully',
+      newCar,
+      carDetails,
+    });
+  } catch (error: any) {
+    console.error('Error in createSavedCar:', error);
+    return res.status(500).json({
+      message: error.message || 'Internal server error',
+      error: error,
+    });
+  }
+};
+
+// saved car
+export const getSavedCars = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    const savedCarRepo = AppDataSource.getRepository(SavedCar);
+    const carRepo = AppDataSource.getRepository(CarDetails);
+    const userRepo = AppDataSource.getRepository(UserAuth);
+
+    const user = await userRepo.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const savedCars = await savedCarRepo.find({
+      where: { userId },
+    });
+
+    if (!savedCars || savedCars.length === 0) {
+      return res.status(404).json({ message: 'No saved cars found' });
+    }
+    const carIds = savedCars.map((sp) => sp.carId);
+    const cars = await carRepo.find({
+      where: { id: In(carIds) },
+      relations: ['carImages', 'address'],
+    });
+    const carMap = new Map(cars.map((p) => [p.id, p]));
+    const result = savedCars.map((sp) => ({
+      savedCar: sp,
+      property: carMap.get(sp.carId) || null,
+    }));
+    return res.status(200).json({
+      message: 'Saved cars retrieved successfully',
+      result: {
+        savedCars: result,
+        user,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || 'Internal server error' });
+  }
+};
+
+// remove saved car
+export const removeSavedCar = async (req: Request, res: Response) => {
+  try {
+    const { savedCarId, userId } = req.body;
+    if (!savedCarId || !userId) {
+      return res.status(400).json({ message: 'Saved car ID and user ID are required' });
+    }
+    const savedCarRepo = AppDataSource.getRepository(SavedCar);
+    const savedCar = await savedCarRepo.findOne({
+      where: { carId: savedCarId, userId },
+    });
+
+    if (!savedCar) {
+      return res.status(404).json({ message: 'Saved car not found' });
+    }
+    await savedCarRepo.remove(savedCar);
+    return res.status(200).json({ message: 'Saved car removed successfully' });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || 'Internal server error' });
+  }
+};

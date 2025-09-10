@@ -1,0 +1,22 @@
+# Generated load test results
+load-test-results-*.json
+
+# Generated bandwidth test results
+bandwidth-test-results-*.json
+
+# Generated unit test results
+unit-test-results-*.json
+
+# Generated integration test results
+integration-test-results-*.json
+
+# Generated API test results
+api-test-results-*.json
+
+# Artillery reports
+artillery-report-*.json
+artillery-report-*.html
+
+# Temporary files
+*.tmp
+*.log 
