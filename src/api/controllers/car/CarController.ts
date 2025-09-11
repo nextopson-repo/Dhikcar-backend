@@ -704,6 +704,7 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
 /**
  * Get all cars with pagination, filtering, and user type restrictions
  */
+
 export const getAllCars = async (req: Request, res: Response) => {
   try {
     const { userType } = req.body;
@@ -711,14 +712,13 @@ export const getAllCars = async (req: Request, res: Response) => {
     const skip = (Number(page) - 1) * Number(limit);
 
     const carRepo = AppDataSource.getRepository(CarDetails);
-    const userRepo = AppDataSource.getRepository(UserAuth);
 
-    // Get total count
+    // ✅ Get total count of cars
     const totalCount = await carRepo.count();
 
-    // Get cars with pagination (❌ user relation removed)
+    // ✅ Get cars with relations including user
     const cars = await carRepo.find({
-      relations: ['address', 'carImages'],
+      relations: ['address', 'carImages', 'user'], // user relation added
       skip,
       take: Number(limit),
       order: {
@@ -729,7 +729,7 @@ export const getAllCars = async (req: Request, res: Response) => {
     if (!cars || cars.length === 0) {
       return res.status(200).json({
         message: 'No cars found',
-        cars: [],
+        properties: [],
         totalCount: 0,
         currentPage: Number(page),
         totalPages: 0,
@@ -737,32 +737,35 @@ export const getAllCars = async (req: Request, res: Response) => {
       });
     }
 
-    // Filter properties based on userType and workingWithDealer
-    const filteredCars = await Promise.all(
-      cars.map(async (car) => {
-        const carOwner = await userRepo.findOne({
-          where: { id: car.userId },
-          select: ['userType'],
-        });
+    // ✅ Filter cars based on userType and workingWithDealer
+    const filteredCars = cars.filter((car) => {
+      if (
+        userType === 'Dealer' &&
+        (car.user.userType === 'Owner' || car.user.userType === 'EndUser') &&
+        car.workingWithDealer === false
+      ) {
+        return false;
+      }
+      return true;
+    });
 
-        if (
-          userType === 'Dealer' &&
-          (carOwner?.userType === 'Owner' || carOwner?.userType === 'EndUser') &&
-          car.workingWithDealer === false
-        ) {
-          return null;
-        }
-        return car;
-      })
-    );
+    const validCars = filteredCars;
 
-    // Remove null values from filtered cars
-    const validCars = filteredCars.filter((car) => car !== null);
-
+    // ✅ Map cars with proper format including user details
     const carsWithUrls = await Promise.all(
       validCars.map(async (car) => {
-        const propertyResponse = await mapCarDetailsResponse(car);
-        return propertyResponse;
+        const carResponse = await mapCarDetailsResponse(car);
+
+        // ✅ attach user details carefully (avoid sensitive info)
+        carResponse.user = {
+          id: car.user.id,
+          fullName: car.user.fullName,
+          email: car.user.email,
+          mobileNumber: car.user.mobileNumber,
+          userType: car.user.userType,
+        };
+
+        return carResponse;
       })
     );
 
@@ -838,8 +841,8 @@ export const getAllCars = async (req: Request, res: Response) => {
 
 //     const carsWithUrls = await Promise.all(
 //       validCars.map(async (car) => {
-//         const propertyResponse = await mapCarDetailsResponse(car);
-//         return propertyResponse;
+//         const carResponse = await mapCarDetailsResponse(car);
+//         return carResponse;
 //       })
 //     );
 
