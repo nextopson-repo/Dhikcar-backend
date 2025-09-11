@@ -716,9 +716,9 @@ export const getAllCars = async (req: Request, res: Response) => {
     // Get total count
     const totalCount = await carRepo.count();
 
-    // Get cars with pagination
+    // Get cars with pagination (❌ user relation removed)
     const cars = await carRepo.find({
-      relations: ['address', 'carImages', 'user'],
+      relations: ['address', 'carImages'],
       skip,
       take: Number(limit),
       order: {
@@ -737,7 +737,7 @@ export const getAllCars = async (req: Request, res: Response) => {
       });
     }
 
-    // Filter properties based on userType and workingWithOwner
+    // Filter properties based on userType and workingWithDealer
     const filteredCars = await Promise.all(
       cars.map(async (car) => {
         const carOwner = await userRepo.findOne({
@@ -745,7 +745,6 @@ export const getAllCars = async (req: Request, res: Response) => {
           select: ['userType'],
         });
 
-        // If requesting user is an agent and property owner is an owner/endUser who doesn't work with dealer for this property
         if (
           userType === 'Dealer' &&
           (carOwner?.userType === 'Owner' || carOwner?.userType === 'EndUser') &&
@@ -776,9 +775,87 @@ export const getAllCars = async (req: Request, res: Response) => {
       hasMore: skip + validCars.length < totalCount,
     });
   } catch (error) {
+    console.error('Error in getAllCars:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+// export const getAllCars = async (req: Request, res: Response) => {
+//   try {
+//     const { userType } = req.body;
+//     const { page = 1, limit = 10 } = req.query;
+//     const skip = (Number(page) - 1) * Number(limit);
+
+//     const carRepo = AppDataSource.getRepository(CarDetails);
+//     const userRepo = AppDataSource.getRepository(UserAuth);
+
+//     // Get total count
+//     const totalCount = await carRepo.count();
+
+//     // Get cars with pagination
+//     const cars = await carRepo.find({
+//       relations: ['address', 'carImages', 'user'],
+//       skip,
+//       take: Number(limit),
+//       order: {
+//         createdAt: 'DESC',
+//       },
+//     });
+
+//     if (!cars || cars.length === 0) {
+//       return res.status(200).json({
+//         message: 'No cars found',
+//         cars: [],
+//         totalCount: 0,
+//         currentPage: Number(page),
+//         totalPages: 0,
+//         hasMore: false,
+//       });
+//     }
+
+//     // Filter properties based on userType and workingWithOwner
+//     const filteredCars = await Promise.all(
+//       cars.map(async (car) => {
+//         const carOwner = await userRepo.findOne({
+//           where: { id: car.userId },
+//           select: ['userType'],
+//         });
+
+//         // If requesting user is an agent and property owner is an owner/endUser who doesn't work with dealer for this property
+//         if (
+//           userType === 'Dealer' &&
+//           (carOwner?.userType === 'Owner' || carOwner?.userType === 'EndUser') &&
+//           car.workingWithDealer === false
+//         ) {
+//           return null;
+//         }
+//         return car;
+//       })
+//     );
+
+//     // Remove null values from filtered cars
+//     const validCars = filteredCars.filter((car) => car !== null);
+
+//     const carsWithUrls = await Promise.all(
+//       validCars.map(async (car) => {
+//         const propertyResponse = await mapCarDetailsResponse(car);
+//         return propertyResponse;
+//       })
+//     );
+
+//     return res.status(200).json({
+//       message: 'Cars retrieved successfully',
+//       properties: carsWithUrls,
+//       totalCount: validCars.length,
+//       currentPage: Number(page),
+//       totalPages: Math.ceil(validCars.length / Number(limit)),
+//       hasMore: skip + validCars.length < totalCount,
+//     });
+//   } catch (error) {
+//     console.error('Error in getAllCars:', error);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// };
 
 /**
  * Search cars by category, subcategory, and city

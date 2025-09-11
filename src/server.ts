@@ -90,9 +90,10 @@ const app: Express = express();
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
   host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'gondola.proxy.rlwy.net',
-  port: process.env.NODE_ENV === 'production' ? Number(process.env.RAILWAY_DB_PORT) : '14576',
+  port: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PORT : '14576',
   username: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_USERNAME : 'root',
-  password: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'OgrreFUGzPujpeHqzGKuunqZCsKvZYfX',
+  password:
+    process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'OgrreFUGzPujpeHqzGKuunqZCsKvZYfX',
   database: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_NAME : 'railway',
   entities: [
     UserAuth,
