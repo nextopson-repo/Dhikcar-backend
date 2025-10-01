@@ -1,10 +1,14 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { AppDataSource } from '@/server';
 import { CarImages } from '@/api/entity/CarImages';
 // import watermarkService from '@/api/services/watermarkService';
 import cloudinary from '../s3/clodinaryConfig';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface UploadRequest extends Request {
   body: {
@@ -67,8 +71,8 @@ export const uploadCarImagesController = async (req: UploadRequest, res: Respons
 
     try {
       // watermarkResult = await watermarkService.addWatermark(imageBuffer);
-      finalFilePath = path.join(__dirname, '../../temp', `watermarked-${Date.now()}-${originalName}`);
-      // fs.writeFileSync(finalFilePath, watermarkResult.watermarkedBuffer);
+      // For now, just use the original image without watermarking
+      watermarkResult = { watermarkApplied: false };
     } catch (watermarkError) {
       console.error('Watermarking failed, using original image:', watermarkError);
       watermarkResult = { watermarkApplied: false };
