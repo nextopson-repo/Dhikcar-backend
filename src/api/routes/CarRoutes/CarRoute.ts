@@ -27,9 +27,8 @@ import {
   getUserRequirementsEnquiry,
   updateUserRequirementsFoundStatus,
 } from '@/api/controllers/car/RequirementsController';
-import { searchCar, testSearch } from '@/api/controllers/car/SearchCar';
+import { searchCar } from '@/api/controllers/car/SearchCar';
 import { getSubCategoryTrendingDetails, getTrendingSubCategories } from '@/api/controllers/car/trendingSubcategouries';
-// import { authenticate } from '@/api/middlewares/auth/Authenticate';
 import {
   carCreationRateLimiter,
   searchRateLimiter,
@@ -47,8 +46,6 @@ const asyncHandler = (fn: any) => (req: any, res: any, next: any) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Apply authentication middleware to all property routes
-// router.use(authenticate);
 
 // Public endpoints with standard rate limiting
 router.post('/get-car-by-id', asyncHandler(getCarById));
@@ -60,55 +57,18 @@ router.get('/get-slides', asyncHandler(getSlides));
 
 // Search endpoints with higher limits
 router.post('/search-car', searchRateLimiter, asyncHandler(searchCar));
-router.post('/test-search', asyncHandler(testSearch)); // Test endpoint for debugging
 router.post('/get-car-filter-data', searchRateLimiter, asyncHandler(getCarFilterData));
 
 // Car management endpoints with strict rate limiting
 router.post('/delete-car', strictRateLimiter, asyncHandler(deleteCar));
 router.post('/update-is-sold', strictRateLimiter, asyncHandler(updateIsSold));
 router.post('/update-car-status', strictRateLimiter, asyncHandler(updateCarStatus));
-// router.post('/update-working-with-dealer', strictRateLimiter, asyncHandler(updateWorkingWithDealer));
 
 // Car creation with specific rate limiting
 router.post('/create-update', carCreationRateLimiter, asyncHandler(createOrUpdateCar));
 
 // File upload endpoints with upload rate limiting
 router.post('/upload-car-images', uploadRateLimiter, upload.single('file'), asyncHandler(uploadCarImagesController));
-// router.post(
-//   '/upload-car-images-with-rekognition',
-//   uploadRateLimiter,
-//   upload.single('file'),
-//   asyncHandler(uploadPropertyImagesWithRecognitionController)
-// );
-// router.post(
-//   '/test-recognition-analysis',
-//   uploadRateLimiter,
-//   upload.single('file'),
-//   asyncHandler(testRecognitionAnalysisController)
-// );
-// router.post(
-//   '/test-image-compression',
-//   uploadRateLimiter,
-//   upload.single('file'),
-//   asyncHandler(testImageCompressionController)
-// );
-// router.post(
-//   '/test-nsfw-detection',
-//   uploadRateLimiter,
-//   upload.single('file'),
-//   asyncHandler(testNsfwDetectionController)
-// );
-// router.post(
-//   '/test-contact-detection',
-//   uploadRateLimiter,
-//   upload.single('file'),
-//   asyncHandler(testContactDetectionController)
-// );
-// router.post('/test-watermark', uploadRateLimiter, upload.single('file'), asyncHandler(testWatermarkController));
-
-// Status check endpoints with burst rate limiting
-// router.get('/check-model-status', burstRateLimiter, asyncHandler(checkModelStatusController));
-// router.get('/check-recognition-status', burstRateLimiter, asyncHandler(checkRecognitionStatusController));
 
 // User-specific endpoints with standard rate limiting
 router.post('/get-user-cars', asyncHandler(getUserCars));

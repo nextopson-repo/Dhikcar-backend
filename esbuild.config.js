@@ -35,7 +35,6 @@ build({
     // Exclude problematic packages that should not be bundled
     '@tensorflow/tfjs-node',
     'sharp',
-    'tesseract.js',
     'bcrypt',
     'bcryptjs'
   ],

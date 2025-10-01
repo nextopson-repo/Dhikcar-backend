@@ -1,0 +1,705 @@
+{
+	"info": {
+		"_postman_id": "cfce6455-4831-4592-b55c-ae4152c50675",
+		"name": "Dhikcar - Complete API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48097475",
+		"_collection_link": "https://dheerajprajapat321-9108643.postman.co/workspace/Dhiraj's-Workspace~36722425-1828-48eb-8e7c-6e799737c1ac/collection/48097475-cfce6455-4831-4592-b55c-ae4152c50675?action=share&source=collection_link&creator=48097475"
+	},
+	"item": [
+		{
+			"name": "Auth APIs",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"fullName\": \"John Doe\",\r\n  \"email\": \"john@example.com\",\r\n  \"mobileNumber\": \"9876543210\",\r\n  \"userType\": \"Individual\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "signup"]
+						}
+					}
+				},
+				{
+					"name": "Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"mobileNumber\": \"9876543210\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/send-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "send-otp"]
+						}
+					}
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"mobileNumber\": \"9876543210\",\r\n  \"emailOtp\": \"123456\",\r\n  \"mobileOtp\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/verify-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "verify-otp"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"password\": \"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Resend Email OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"john@example.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/resend-email-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "resend-email-otp"]
+						}
+					}
+				},
+				{
+					"name": "Resend Mobile OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mobileNumber\": \"9876543210\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/resend-mobile-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "resend-mobile-otp"]
+						}
+					}
+				},
+				{
+					"name": "Google Auth",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"idToken\": \"google_id_token_here\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/google-auth",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "google-auth"]
+						}
+					}
+				},
+				{
+					"name": "Update User Type",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"user_id_here\",\r\n  \"userType\": \"Dealer\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/update-user-type",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "update-user-type"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Google OAuth APIs",
+			"item": [
+				{
+					"name": "Get Google OAuth URL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/google/url?state=random_state",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "google", "url"],
+							"query": [
+								{
+									"key": "state",
+									"value": "random_state"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Google OAuth Callback",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"code\": \"authorization_code_from_google\",\r\n  \"state\": \"random_state\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/google/callback",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "google", "callback"]
+						}
+					}
+				},
+				{
+					"name": "Verify Google ID Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"idToken\": \"google_id_token_here\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/google/verify-token",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "google", "verify-token"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Apple OAuth APIs",
+			"item": [
+				{
+					"name": "Get Apple OAuth URL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/apple/url?state=random_state",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "apple", "url"],
+							"query": [
+								{
+									"key": "state",
+									"value": "random_state"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Apple OAuth Callback",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"code\": \"authorization_code_from_apple\",\r\n  \"state\": \"random_state\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/apple/callback",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "apple", "callback"]
+						}
+					}
+				},
+				{
+					"name": "Verify Apple ID Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"identityToken\": \"apple_identity_token_here\",\r\n  \"authorizationCode\": \"authorization_code\",\r\n  \"user\": \"apple_user_id\",\r\n  \"email\": \"user@example.com\",\r\n  \"fullName\": {\r\n    \"givenName\": \"John\",\r\n    \"familyName\": \"Doe\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/apple/verify-token",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "apple", "verify-token"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Car APIs",
+			"item": [
+				{
+					"name": "Create/Update Car",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"8d302b3a-67f1-41b2-86b3-ebbaabbabe4c\",\r\n  \"carName\": \"Hyundai Venue Sports Hybrid\",\r\n  \"brand\": \"Hyundai\",\r\n  \"model\": \"venue\",\r\n  \"variant\": \"hybrid\",\r\n  \"fuelType\": \"Petrol\",\r\n  \"transmission\": \"automatic\",\r\n  \"bodyType\": \"hatchback\",\r\n  \"ownership\": \"2nd\",\r\n  \"manufacturingYear\": 2022,\r\n  \"registrationYear\": 2023,\r\n  \"isSale\": \"Sell\",\r\n  \"carPrice\": 1100000,\r\n  \"kmDriven\": 5000,\r\n  \"seats\": 4,\r\n  \"isSold\": false,\r\n  \"addressCity\": \"Indore\",\r\n  \"addressState\": \"Madhya Pradesh\",\r\n  \"addressLocality\": \"Vijay Nagar\",\r\n  \"carImages\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/create-update",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "create-update"]
+						}
+					}
+				},
+				{
+					"name": "Get Car By ID",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carId\": \"0157c1c718b40e50\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/get-car-by-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "get-car-by-id"]
+						}
+					}
+				},
+				{
+					"name": "Get User Cars",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"a51cde5d-b41b-40d8-a480-794282ffead8\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/get-user-cars?page=1&limit=5",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "get-user-cars"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Cars",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userType\": \"Dealer\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/getAll",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Search Car",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"brand\": \"Hyundai\",\r\n  \"model\": \"venue\",\r\n  \"city\": \"Indore\",\r\n  \"minPrice\": 500000,\r\n  \"maxPrice\": 1500000,\r\n  \"fuelType\": \"Petrol\",\r\n  \"transmission\": \"automatic\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/search-car",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "search-car"]
+						}
+					}
+				},
+				{
+					"name": "Get Car Filter Data",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"city\": \"Indore\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/get-car-filter-data",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "get-car-filter-data"]
+						}
+					}
+				},
+				{
+					"name": "Trending Car",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"city\": \"Indore\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/trending-car",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "trending-car"]
+						}
+					}
+				},
+				{
+					"name": "Get Trending Subcategories",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"city\": \"Indore\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/trending-subcategories",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "trending-subcategories"]
+						}
+					}
+				},
+				{
+					"name": "Get Subcategory Trending Details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subcategory\": \"hatchback\",\r\n  \"city\": \"Indore\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/subcategory-trending-details",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "subcategory-trending-details"]
+						}
+					}
+				},
+				{
+					"name": "Get Slides",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/get-slides",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "get-slides"]
+						}
+					}
+				},
+				{
+					"name": "Upload Car Images",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "carId",
+									"value": "car_id_here",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/upload-car-images",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "upload-car-images"]
+						}
+					}
+				},
+				{
+					"name": "Delete Car",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carId\": \"car_id_here\",\r\n  \"userId\": \"user_id_here\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/delete-car",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "delete-car"]
+						}
+					}
+				},
+				{
+					"name": "Update Car Status",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carId\": \"car_id_here\",\r\n  \"status\": \"active\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/update-car-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "update-car-status"]
+						}
+					}
+				},
+				{
+					"name": "Update Is Sold",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carId\": \"car_id_here\",\r\n  \"isSold\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/update-is-sold",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "update-is-sold"]
+						}
+					}
+				},
+				{
+					"name": "Get User Cars By IDs",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carIds\": [\"car_id_1\", \"car_id_2\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/get-user-cars-by-ids",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "get-user-cars-by-ids"]
+						}
+					}
+				},
+				{
+					"name": "Get Car Leads",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"user_id_here\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/get-car-leads",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "get-car-leads"]
+						}
+					}
+				},
+				{
+					"name": "Share Car Email Notification",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carId\": \"car_id_here\",\r\n  \"email\": \"recipient@example.com\",\r\n  \"message\": \"Check out this car!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car/share-car-email-notification",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "car", "share-car-email-notification"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "your_jwt_token_here",
+			"type": "string"
+		}
+	]
+}

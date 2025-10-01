@@ -2,7 +2,7 @@
   "watch": ["src"],
   "ext": ".ts,.js",
   "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts", "dist/**/*"],
-  "exec": "tsx src/index.ts | pino-pretty",
+  "exec": "tsx src/index.ts",
   "events": {
     "restart": "echo '[nodemon] App restarted due to changes'",
     "crash": "echo '[nodemon] App crashed - attempting restart...'",

@@ -16,7 +16,7 @@
     "noPropertyAccessFromIndexSignature": false,
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0",
-    "types": ["vitest/globals"],
+    "types": [],
 
     // for decorators support
     "experimentalDecorators": true,
