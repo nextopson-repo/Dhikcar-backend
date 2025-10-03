@@ -64,8 +64,8 @@ router.post('/delete-car', strictRateLimiter, asyncHandler(deleteCar));
 router.post('/update-is-sold', strictRateLimiter, asyncHandler(updateIsSold));
 router.post('/update-car-status', strictRateLimiter, asyncHandler(updateCarStatus));
 
-// Car creation with specific rate limiting
-router.post('/create-update', carCreationRateLimiter, asyncHandler(createOrUpdateCar));
+// Car creation with specific rate limiting and file upload support
+router.post('/create-update', carCreationRateLimiter, upload.array('carImages', 10), asyncHandler(createOrUpdateCar));
 
 // File upload endpoints with upload rate limiting
 router.post('/upload-car-images', uploadRateLimiter, upload.single('file'), asyncHandler(uploadCarImagesController));

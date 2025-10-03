@@ -759,7 +759,7 @@ export const getAllCars = async (req: Request, res: Response) => {
 
     // Get cars with pagination and sorting
     const cars = await carRepo.find({
-      where: whereConditions,
+      // where: whereConditions, 
       relations: ['address', 'carImages'],
       skip,
       take: Number(limit),

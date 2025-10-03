@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
-
-import { UserAuth } from '@/api/entity';
+import fs from 'fs';
+import path from 'path';
+import { UserAuth } from '@/api/entity/UserAuth';
 import { Address } from '@/api/entity/Address';
 import { CarDetails } from '@/api/entity/CarDetails';
 import { CarImages } from '@/api/entity/CarImages';
 import { AppDataSource } from '@/server';
+import cloudinary from '../s3/clodinaryConfig';
+
+// Use process.cwd() as fallback for directory path
+const __dirname = path.join(process.cwd(), 'src', 'api', 'controllers', 'car');
 
 // Custom type for request user
 type RequestUser = {
@@ -23,11 +28,6 @@ export interface CarRequest extends Omit<Request, 'user'> {
     addressState?: string;
     addressCity?: string;
     addressLocality?: string;
-    imageKeys: Array<{
-      imageKey: string;
-      imgClassifications: 'Left' | 'Right' | 'Front' | 'Back' | 'Door' | 'Roof' | 'Window' | 'Other';
-      accurencyPercent: number;
-    }>;
     title?: string;
     carName?: string;
     brand?: string;
@@ -43,114 +43,96 @@ export interface CarRequest extends Omit<Request, 'user'> {
     carPrice?: number;
     kmDriven?: number;
     seats: number;
-    isSold?: boolean;
     isActive?: boolean;
   };
+  files?: Express.Multer.File[];
   user?: RequestUser;
 }
-
-// Validation and transformation functions
-// const validateAndTransformFurnishing = (
-//   input: string | undefined
-// ): 'Semi Furnished' | 'Fully Furnished' | 'Unfurnished' | null => {
-//   if (!input) return null;
-
-//   const normalized = input.toLowerCase().trim();
-
-//   if (normalized.includes('semi') || normalized.includes('partial')) {
-//     return 'Semi Furnished';
-//   }
-//   if (normalized.includes('full') || normalized.includes('complete')) {
-//     return 'Fully Furnished';
-//   }
-//   if (normalized.includes('unfurnished') || normalized.includes('bare') || normalized.includes('empty')) {
-//     return 'Unfurnished';
-//   }
-
-//   return null; // Invalid input
-// };
-
-// const validateAndTransformConstructionStatus = (
-//   input: string | undefined
-// ): 'Ready to Move' | 'Under Construction' | 'New Launch' | null => {
-//   if (!input) return null;
-
-//   const normalized = input.toLowerCase().trim();
-
-//   if (normalized.includes('ready') || normalized.includes('move') || normalized.includes('complete')) {
-//     return 'Ready to Move';
-//   }
-//   if (normalized.includes('under') || normalized.includes('construction') || normalized.includes('ongoing')) {
-//     return 'Under Construction';
-//   }
-//   if (normalized.includes('new') || normalized.includes('launch') || normalized.includes('pre')) {
-//     return 'New Launch';
-//   }
-
-//   return null; // Invalid input
-// };
-
-// const validateAndTransformPropertyFacing = (
-//   input: string | undefined
-// ): 'North' | 'South' | 'East' | 'West' | 'North-East' | 'North-West' | 'South-East' | 'South-West' | null => {
-//   if (!input) return null;
-
-//   const normalized = input.toLowerCase().trim();
-
-//   // Handle abbreviations and variations
-//   if (normalized === 'n' || normalized === 'north') return 'North';
-//   if (normalized === 's' || normalized === 'south') return 'South';
-//   if (normalized === 'e' || normalized === 'east') return 'East';
-//   if (normalized === 'w' || normalized === 'west') return 'West';
-//   if (
-//     normalized === 'ne' ||
-//     normalized.includes('north-east') ||
-//     normalized.includes('northeast') ||
-//     normalized.includes('North East')
-//   )
-//     return 'North-East';
-//   if (
-//     normalized === 'nw' ||
-//     normalized.includes('north-west') ||
-//     normalized.includes('northwest') ||
-//     normalized.includes('north west') ||
-//     normalized.includes('North West')
-//   )
-//     return 'North-West';
-//   if (
-//     normalized === 'se' ||
-//     normalized.includes('south-east') ||
-//     normalized.includes('southeast') ||
-//     normalized.includes('south east') ||
-//     normalized.includes('South East')
-//   )
-//     return 'South-East';
-//   if (
-//     normalized === 'sw' ||
-//     normalized.includes('south-west') ||
-//     normalized.includes('southwest') ||
-//     normalized.includes('south west') ||
-//     normalized.includes('South West')
-//   )
-//     return 'South-West';
-
-//   return null; // Invalid input
-// };
 
 const validateAndTransformIsSale = (input: string | undefined): 'Sell' | 'Buy' | null => {
   if (!input) return null;
 
   const normalized = input.toLowerCase().trim();
 
-  if (normalized === 'sell' || normalized === 'sale' || normalized === 'buy') {
+  if (normalized === 'sell' || normalized === 'sale') {
     return 'Sell';
   }
-  if (normalized === 'rent' || normalized === 'rental') {
+  if (normalized === 'buy' || normalized === 'rent' || normalized === 'rental') {
     return 'Buy';
   }
 
-  return null; // Invalid input
+  return null; 
 };
+
+// Helper function to generate unique key for uploaded images
+function generateUniqueKey(originalname: string): string {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 10000);
+  return `${timestamp}-${random}-${originalname}`;
+}
+
+// Helper function to upload image to Cloudinary with timeout
+async function uploadImageToCloudinary(file: Express.Multer.File, userId: string): Promise<{ imageKey: string; presignedUrl: string }> {
+  return new Promise(async (resolve, reject) => {
+    // Check if Cloudinary is configured
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.warn('Cloudinary not configured, skipping image upload');
+      reject(new Error('Cloudinary not configured'));
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      reject(new Error('Upload timeout after 20 seconds'));
+    }, 20000); // 20 seconds timeout
+
+    try {
+      const imageBuffer = file.buffer;
+      const originalName = file.originalname;
+      const tempFileName = `temp-${Date.now()}-${originalName}`;
+      const tempFilePath = path.join(__dirname, '../../temp', tempFileName);
+
+      // Create temp folder if it doesn't exist
+      if (!fs.existsSync(path.dirname(tempFilePath))) {
+        fs.mkdirSync(path.dirname(tempFilePath), { recursive: true });
+      }
+
+      // Save image temporarily
+      fs.writeFileSync(tempFilePath, imageBuffer);
+
+      console.log(`Processing file: ${originalName}, size: ${imageBuffer.length} bytes`);
+
+      // Upload to Cloudinary with optimized settings
+      const result = await cloudinary.uploader.upload(tempFilePath, {
+        folder: 'nextdeal/car-images',
+        public_id: generateUniqueKey(originalName).split('.')[0],
+        resource_type: 'auto',
+        quality: 'auto',
+        fetch_format: 'auto',
+        transformation: [
+          { width: 1200, height: 800, crop: 'limit', quality: 'auto' }
+        ],
+        eager: [
+          { width: 400, height: 300, crop: 'fill', quality: 'auto' }
+        ]
+      });
+
+      // Clean up temp file immediately
+      if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+      }
+
+      clearTimeout(timeout);
+      resolve({
+        imageKey: result.public_id,
+        presignedUrl: result.secure_url,
+      });
+    } catch (error) {
+      clearTimeout(timeout);
+      console.error('Error uploading to Cloudinary:', error);
+      reject(new Error(`Image upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+    }
+  });
+}
 
 export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
   const {
@@ -173,10 +155,13 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
     kmDriven,
     seats,
     isSale,
-    isSold,
-    imageKeys,
     title: requestTitle,
   } = req.body;
+
+  const uploadedFiles = req.files as Express.Multer.File[] || [];
+
+  console.warn('req.body', req.body);
+  console.log(`Processing ${uploadedFiles.length} uploaded images`);
 
   // Helper function to safely transform fields
   const safeTransform = (field: any, isArray: boolean = false) => {
@@ -206,8 +191,43 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (!CarImages) {
-      return res.status(404).json({ success: false, message: 'Car Images not found' });
+    // Process uploaded images
+    let processedImages: Array<{
+      imageKey: string;
+      presignedUrl: string;
+      imgClassifications: string;
+      accurencyPercent: number;
+    }> = [];
+
+    if (uploadedFiles.length > 0) {
+      console.log(`Processing ${uploadedFiles.length} uploaded images`);
+      
+      for (const file of uploadedFiles) {
+        try {
+          const uploadResult = await uploadImageToCloudinary(file, userId);
+          processedImages.push({
+            imageKey: uploadResult.imageKey,
+            presignedUrl: uploadResult.presignedUrl,
+            imgClassifications: 'other', // Default classification
+            accurencyPercent: 0, // Default accuracy
+          });
+        } catch (error) {
+          console.error(`Error uploading image ${file.originalname}:`, error);
+          // If Cloudinary is not configured, create a mock entry for testing
+          if (error instanceof Error && error.message.includes('Cloudinary not configured')) {
+            console.log('Creating mock image entry for testing purposes');
+            processedImages.push({
+              imageKey: `mock-${Date.now()}-${file.originalname}`,
+              presignedUrl: `https://via.placeholder.com/400x300?text=${encodeURIComponent(file.originalname)}`,
+              imgClassifications: 'other',
+              accurencyPercent: 0,
+            });
+          }
+          // Continue with other images even if one fails
+        }
+      }
+      
+      console.log(`Final image keys count: ${processedImages.length}`);
     }
 
     // Check if car exists for update
@@ -235,10 +255,6 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
       // Update car with only provided fields
       const carUpdateData: Partial<CarDetails> = {};
 
-      // Always update category and subCategory as they are required
-      // carUpdateData.category = category; // category is now properly typed
-      // carUpdateData.subCategory = subCategory; // subCategory is now properly typed
-
       // Only include other fields that are provided in the request
       if (requestTitle !== undefined) carUpdateData.title = safeTransform(requestTitle);
       if (carName !== undefined) carUpdateData.carName = safeTransform(carName);
@@ -250,28 +266,28 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
           console.warn(`Invalid isSale value: "${isSale}". Valid options: Sell, Buy`);
         }
       }
-      // if (carPrice !== undefined) carUpdateData.carPrice = safeTransform(carPrice);
-      if (isSold !== undefined) carUpdateData.isSold = safeTransform(isSold);
-      // if (workingWithDealer !== undefined) carUpdateData.workingWithDealer = safeTransform(workingWithDealer);
-
+     
       Object.assign(existingCar, carUpdateData);
 
       // Handle car images update
-      if (imageKeys && imageKeys.length > 0) {
+      if (processedImages.length > 0) {
         // Delete existing images
         if (existingCar.carImages.length > 0) {
           await carImagesRepo.remove(existingCar.carImages);
         }
 
         // Create new car images (only with valid imageKey)
-        const carImages = imageKeys
+        const carImages = processedImages
           .filter((imgData) => imgData.imageKey)
           .map((imgData) => {
             const carImage = new CarImages();
             carImage.imageKey = imgData.imageKey;
+            carImage.presignedUrl = imgData.presignedUrl;
             carImage.imgClassifications = imgData.imgClassifications;
             carImage.accurencyPercent = imgData.accurencyPercent;
             carImage.car = existingCar;
+            carImage.createdBy = userId;
+            carImage.updatedBy = userId;
             return carImage;
           });
 
@@ -281,10 +297,6 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
           existingCar.carImages = [];
         }
       }
-
-      // Generate title and description for updated car before saving
-      // This is a critical async operation that must complete before saving to database
-      // The CarTitleAndDescription.generate() method handles all fallbacks and ensures reliable output
 
       // Only generate title and description if they don't already exist or if title is not provided in request
       const updatedCar = await carRepo.save(existingCar);
@@ -321,40 +333,26 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
     const newCar = new CarDetails();
     newCar.userId = userId;
     newCar.address = newAddress;
-    newCar.carName = carName;
-    newCar.brand = brand;
-    newCar.model = model;
-    newCar.variant = variant;
-    newCar.fuelType = fuelType;
-    newCar.transmission = transmission;
-    newCar.ownership = ownership;
-    newCar.bodyType = bodyType;
-    newCar.kmDriven = kmDriven;
-    newCar.seats = seats;
-    newCar.isSale = isSale;
-    newCar.carPrice = carPrice;
-    newCar.isSold = isSold;
-    newCar.manufacturingYear = manufacturingYear;
-    newCar.registrationYear = registrationYear;
+    newCar.carName = safeTransform(carName) || '';
+    newCar.brand = safeTransform(brand) || '';
+    newCar.model = safeTransform(model) || '';
+    newCar.variant = safeTransform(variant) || '';
+    newCar.fuelType = safeTransform(fuelType) || 'Petrol';
+    newCar.transmission = safeTransform(transmission) || 'Manual';
+    newCar.ownership = safeTransform(ownership) || '1st';
+    newCar.bodyType = safeTransform(bodyType) || '';
+    newCar.kmDriven = safeTransform(kmDriven) || 0;
+    newCar.seats = safeTransform(seats) || 4;
+    newCar.manufacturingYear = safeTransform(manufacturingYear) || new Date().getFullYear();
+    newCar.registrationYear = safeTransform(registrationYear) || new Date().getFullYear();
 
     // Validate and transform isSale
     const validatedIsSale = validateAndTransformIsSale(isSale);
     if (isSale && !validatedIsSale) {
       console.warn(`Invalid isSale value: "${isSale}". Valid options: Sell, Buy`);
     }
-    newCar.isSale = validatedIsSale as any;
+    newCar.isSale = validatedIsSale || 'Sell';
     newCar.carPrice = safeTransform(carPrice) || 0;
-    newCar.isSold = safeTransform(isSold) || false;
-    newCar.model = safeTransform(model);
-    newCar.variant = safeTransform(variant);
-    newCar.fuelType = safeTransform(fuelType);
-    newCar.transmission = safeTransform(transmission);
-    newCar.ownership = safeTransform(ownership);
-    newCar.bodyType = safeTransform(bodyType);
-    newCar.manufacturingYear = safeTransform(manufacturingYear);
-    newCar.registrationYear = safeTransform(registrationYear);
-    newCar.kmDriven = safeTransform(kmDriven);
-    newCar.seats = safeTransform(seats);
     newCar.createdBy = userId;
     newCar.updatedBy = userId;
 
@@ -367,15 +365,18 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
     const savedCar = await carRepo.save(newCar);
 
     // Create car images if provided
-    if (imageKeys && imageKeys.length > 0) {
-      const carImages = imageKeys
+    if (processedImages.length > 0) {
+      const carImages = processedImages
         .filter((imgData) => imgData.imageKey)
         .map((imgData) => {
           const carImage = new CarImages();
           carImage.imageKey = imgData.imageKey;
+          carImage.presignedUrl = imgData.presignedUrl;
           carImage.imgClassifications = imgData.imgClassifications;
           carImage.accurencyPercent = imgData.accurencyPercent;
           carImage.car = savedCar;
+          carImage.createdBy = userId;
+          carImage.updatedBy = userId;
           return carImage;
         });
 

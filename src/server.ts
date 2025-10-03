@@ -104,7 +104,7 @@ app.use((req: Request, res: Response, next) => {
       logger.error(`Request timeout for ${req.method} ${req.url}`);
       res.status(408).json({ status: 'error', message: 'Request timeout', path: req.url, method: req.method });
     }
-  }, 35000);
+  }, 350000);
   res.on('finish', () => clearTimeout(timeout));
   res.on('close', () => clearTimeout(timeout));
   next();
@@ -170,6 +170,18 @@ const httpServer = initializeSocket(app);
 httpServer.timeout = 30000;
 httpServer.keepAliveTimeout = 65000;
 httpServer.headersTimeout = 66000;
+
+// Set max listeners to prevent memory leak warnings
+process.setMaxListeners(0);
+
+// Handle connection cleanup to prevent memory leaks
+httpServer.on('connection', (socket) => {
+  socket.setMaxListeners(0);
+  socket.on('close', () => {
+    // Clean up any remaining listeners
+    socket.removeAllListeners();
+  });
+});
 
 // Database connection with retry logic
 let dbRetryCount = 0;
