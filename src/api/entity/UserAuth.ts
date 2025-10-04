@@ -31,7 +31,7 @@ export class UserAuth extends BaseEntity {
   @Column({ type: 'varchar', length: 15, unique: true, nullable: true })
   mobileNumber!: string;
 
-  @Column({ type: 'enum', enum: ['Dealer', 'Owner', 'EndUser'], nullable: true })
+  @Column({ type: 'enum', enum: ['Dealer', 'Owner', 'EndUser'], default: 'EndUser' })
   userType!: 'Dealer' | 'Owner' | 'EndUser';
 
   @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
@@ -44,7 +44,7 @@ export class UserAuth extends BaseEntity {
   fullName!: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  userProfileKey!: string;
+  userProfileUrl!: string;
 
   @Column({ type: 'varchar', length: 4, nullable: true })
   emailOTP!: string | null;

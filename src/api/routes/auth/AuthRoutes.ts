@@ -22,7 +22,7 @@ import { VerifyOTP } from '../../controllers/auth/verifyOTPHandler';
 const Router = express.Router();
 
 // Apply rate limiting to auth routes
-// Router.use(rateLimiter); // Rate limiting disabled
+// Router.use(rateLimiter); 
 
 // Public routes with security middleware
 Router.post(

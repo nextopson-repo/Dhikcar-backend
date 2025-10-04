@@ -83,7 +83,7 @@ const updateUserTypeHandler = async (req: Request, res: Response): Promise<void>
             userType: updatedUser.userType,
             isEmailVerified: updatedUser.isEmailVerified,
             isMobileVerified: updatedUser.isMobileVerified,
-            profilePhoto: updatedUser.userProfileKey,
+            profilePhoto: updatedUser.userProfileUrl,
             isSignedUp: !!updatedUser.userType,
             isFullyVerified: updatedUser.isFullyVerified(),
           },

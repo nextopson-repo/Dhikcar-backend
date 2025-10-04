@@ -7,7 +7,7 @@ import { sendEmailOTP } from '@/common/utils/mailService';
 import { AppDataSource } from '@/server';
 
 export const EditUserProfile = async (req: Request, res: Response) => {
-  const { userId, userProfileKey, email, fullName, mobileNumber, address, landmark, city, pin, socialMediaLinks } =
+  const { userId, userProfileUrl, email, fullName, mobileNumber, address, landmark, city, pin, socialMediaLinks } =
     req.body;
 
   if (!userId) {
@@ -18,7 +18,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
     const userRepo = AppDataSource.getRepository(UserAuth);
     const user = await userRepo.findOne({
       where: { id: userId },
-      // select: ["email", "id", "userProfileKey", "mobileNumber", "fullName" , "profileImg", "userType"],
+      // select: ["email", "id", "userProfileUrl", "mobileNumber", "fullName" , "profileImg", "userType"],
     });
 
     if (!user) {
@@ -26,8 +26,8 @@ export const EditUserProfile = async (req: Request, res: Response) => {
     }
 
     // Update fields
-    if (userProfileKey) {
-      user.userProfileKey = userProfileKey;
+    if (userProfileUrl) {
+      user.userProfileUrl = userProfileUrl;
     }
 
     if (email) {
@@ -81,7 +81,7 @@ export const EditUserProfile = async (req: Request, res: Response) => {
         landmark: user.landmark,
         city: user.city,
         pin: user.pin,
-        userProfileKey: user.userProfileKey,
+        userProfileUrl: user.userProfileUrl,
         profileImg: user.profileImg,
         socialMediaLinks: user.socialMediaLinks,
       },

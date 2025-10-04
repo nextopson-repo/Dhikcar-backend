@@ -309,7 +309,7 @@ export const getAllRequirements = async (req: Request, res: Response) => {
           createdAt: formatTimeStamp(requirement.createdAt),
           user: {
             fullName: user?.fullName,
-            // userProfile: user?.userProfileKey ? await generatePresignedUrl(user?.userProfileKey) : null,
+            // userProfile: user?.userProfileUrl ? await generatePresignedUrl(user?.userProfileUrl) : null,
             mobileNumber: user?.mobileNumber,
             email: user?.email,
             userType: user?.userType,
@@ -507,8 +507,8 @@ export const getUserRequirements = async (req: Request, res: Response) => {
                       name: enquiry.user.fullName,
                       email: enquiry.user.email,
                       mobileNumber: enquiry.user.mobileNumber,
-                      // image: enquiry.user.userProfileKey
-                      //   ? generatePresignedUrl(enquiry.user.userProfileKey)
+                      // image: enquiry.user.userProfileUrl
+                      //   ? generatePresignedUrl(enquiry.user.userProfileUrl)
                       //   : 'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg',
                       userType: enquiry.user.userType,
                       timeStamp: formatTimeStamp(enquiry.createdAt),
@@ -679,8 +679,8 @@ export const getUserRequirementsEnquiry = async (req: Request, res: Response) =>
         return {
           agent: {
             name: agent?.fullName || '',
-            image: agent?.userProfileKey
-              ? `${S3_BASE_URL}${agent.userProfileKey}`
+            image: agent?.userProfileUrl
+              ? `${S3_BASE_URL}${agent.userProfileUrl}`
               : 'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg',
             role: agent?.userType || 'Agent',
             timeAgo: req?.createdAt,
@@ -848,7 +848,7 @@ export const createRequirementEnquiry = async (req: Request, res: Response) => {
     //     generateNotification(
     //         requirement.userId,
     //         `You have a new enquiry for your ${requirement.subCategory || requirement.category} requirement`,
-    //         user.userProfileKey,
+    //         user.userProfileUrl,
     //         NotificationType.ENQUIRY,
     //         user.fullName,
     //         'View Enquiry',
@@ -858,7 +858,7 @@ export const createRequirementEnquiry = async (req: Request, res: Response) => {
     //                 `₹${requirement.minBudget} - ₹${requirement.maxBugdget}` : 'Budget not specified',
     //             location: requirement.addressId ?
     //                 `${requirement.addressId.city}, ${requirement.addressId.state}` : 'Location not specified',
-    //             image: user.userProfileKey || ''
+    //             image: user.userProfileUrl || ''
     //         },
     //         'Enquiry',
     //         undefined,
@@ -872,7 +872,7 @@ export const createRequirementEnquiry = async (req: Request, res: Response) => {
     // generateNotification(
     //     userId,
     //     `Your enquiry for ${requirement.subCategory || requirement.category} requirement has been sent`,
-    //     user.userProfileKey,
+    //     user.userProfileUrl,
     //     NotificationType.ENQUIRY,
     //     requirement.subCategory || requirement.category,
     //     'review',
@@ -882,7 +882,7 @@ export const createRequirementEnquiry = async (req: Request, res: Response) => {
     //             `₹${requirement.minBudget} - ₹${requirement.maxBugdget}` : 'Budget not specified',
     //         location: requirement.addressId ?
     //             `${requirement.addressId.city}, ${requirement.addressId.state}` : 'Location not specified',
-    //         image: user.userProfileKey || ''
+    //         image: user.userProfileUrl || ''
     //     },
     //     'Enquiry',
     //     undefined,

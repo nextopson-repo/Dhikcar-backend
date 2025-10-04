@@ -173,7 +173,7 @@ export const republishRequest = async (req: Request, res: Response) => {
         const [requester, car] = await Promise.all([
           userRepo.findOne({
             where: { id: republisher.republisherId },
-            select: ['id', 'fullName', 'email', 'mobileNumber', 'userProfileKey'],
+            select: ['id', 'fullName', 'email', 'mobileNumber', 'userProfileUrl'],
           }),
           carRepo.findOne({
             where: { id: republisher.carId },
@@ -190,7 +190,7 @@ export const republishRequest = async (req: Request, res: Response) => {
             email: requester?.email,
             mobileNumber: requester?.mobileNumber,
             requestTimeStamp: republisher.createdAt,
-            profileImage: requester?.userProfileKey,
+            profileImage: requester?.userProfileUrl,
           },
           car: {
             id: car?.id,

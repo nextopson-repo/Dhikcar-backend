@@ -128,12 +128,12 @@ export const getUserReviews = async (req: Request, res: Response) => {
       reviews.map(async (review) => {
         const reviewer = await userRepo.findOne({
           where: { id: review.reviewerId },
-          select: ['fullName', 'userProfileKey'],
+          select: ['fullName', 'userProfileUrl'],
         });
 
         let reviewerProfileImg = null;
-        if (reviewer?.userProfileKey) {
-          reviewerProfileImg = generateCloudinaryUrl(reviewer.userProfileKey);
+        if (reviewer?.userProfileUrl) {
+          reviewerProfileImg = generateCloudinaryUrl(reviewer.userProfileUrl);
         }
 
         return {
@@ -295,12 +295,12 @@ export const getUserReviews = async (req: Request, res: Response) => {
 //       reviews.map(async (review) => {
 //         const reviewer = await userRepo.findOne({
 //           where: { id: review.reviewerId },
-//           select: ['fullName', 'userProfileKey'],
+//           select: ['fullName', 'userProfileUrl'],
 //         });
 
 //         let reviewerProfileImg = null;
-//         if (reviewer?.userProfileKey) {
-//           reviewerProfileImg = await generatePresignedUrl(reviewer.userProfileKey);
+//         if (reviewer?.userProfileUrl) {
+//           reviewerProfileImg = await generatePresignedUrl(reviewer.userProfileUrl);
 //         }
 
 //         return {

@@ -11,9 +11,7 @@ import { AppDataSource } from '@/server';
 
 const verifyOTPSchema = z.object({
   userId: z.string().min(1, 'User ID is required'),
-  otpType: z.enum(['email', 'mobile'], {
-    errorMap: () => ({ message: 'Invalid OTP type' }),
-  }),
+  mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits'),
   otp: z.string().min(4, 'OTP must be 4 digits').max(4, 'OTP must be 4 digits'),
 });
 
@@ -48,7 +46,7 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { userId, otpType, otp } = validationResult.data;
+    const { userId, mobileNumber, otp } = validationResult.data;
 
     if (!AppDataSource.isInitialized) {
       handleServiceResponse(
@@ -73,12 +71,10 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
         'email',
         'userType',
         'mobileNumber',
-        'userProfileKey',
+        'userProfileUrl',
         'profileImg',
         'isEmailVerified',
         'isMobileVerified',
-        'emailOTP',
-        'emailOTPSentAt',
         'mobileOTP',
         'mobileOTPSentAt',
       ],
@@ -87,6 +83,20 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
     if (!user) {
       handleServiceResponse(
         new ServiceResponse(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND),
+        res
+      );
+      return;
+    }
+
+    // Verify mobile number matches
+    if (user.mobileNumber !== mobileNumber) {
+      handleServiceResponse(
+        new ServiceResponse(
+          ResponseStatus.Failed,
+          'Mobile number does not match user record',
+          null,
+          StatusCodes.BAD_REQUEST
+        ),
         res
       );
       return;
@@ -105,29 +115,18 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
       return otpAge <= tenMinutes;
     };
 
-    if (otpType === 'email') {
-      if (!user.emailOTP) {
-        verificationError = 'No email OTP found. Please request a new OTP.';
-      } else if (!checkOTPExpiry(user.emailOTPSentAt)) {
-        verificationError = 'Email OTP has expired. Please request a new OTP.';
-      } else if (user.emailOTP !== otp) {
-        verificationError = 'Invalid email OTP. Please check and try again.';
-      } else {
-        isVerified = true;
-      }
-    } else if (otpType === 'mobile') {
-      if (isPlaystoreBypass) {
-        isVerified = true;
-      } else {
-        if (!user.mobileOTP) {
-          verificationError = 'No mobile OTP found. Please request a new OTP.';
-        } else if (!checkOTPExpiry(user.mobileOTPSentAt)) {
-          verificationError = 'Mobile OTP has expired. Please request a new OTP.';
-        } else if (user.mobileOTP !== otp) {
-          verificationError = 'Invalid mobile OTP. Please check and try again.';
-        } else {
-          isVerified = true;
-        }
+    if (isPlaystoreBypass) {
+      isVerified = true;
+    } else {
+      if (!user.mobileOTP) {
+        verificationError = 'No mobile OTP found. Please request a new OTP.';
+        isVerified = false;
+      } else if (!checkOTPExpiry(user.mobileOTPSentAt)) {
+        verificationError = 'Mobile OTP has expired. Please request a new OTP.';
+        isVerified = false;
+      } else if (user.mobileOTP !== otp) {
+        verificationError = 'Invalid mobile OTP. Please check and try again.';
+        isVerified = false;
       }
     }
 
@@ -139,16 +138,12 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const updateData: Partial<UserAuth> = {};
-    if (otpType === 'email') {
-      updateData.isEmailVerified = true;
-      updateData.emailOTP = null;
-      updateData.emailOTPSentAt = null;
-    } else {
-      updateData.isMobileVerified = true;
-      updateData.mobileOTP = null;
-      updateData.mobileOTPSentAt = null;
-    }
+    // Update mobile verification status
+    const updateData: Partial<UserAuth> = {
+      isMobileVerified: true,
+      mobileOTP: null,
+      mobileOTPSentAt: null,
+    };
 
     await userRepo.update(userId, updateData);
 
@@ -160,7 +155,7 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
         'email',
         'userType',
         'mobileNumber',
-        'userProfileKey',
+        'userProfileUrl',
         'profileImg',
         'isEmailVerified',
         'isMobileVerified',
@@ -180,31 +175,25 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const isFullyVerified = updatedUser.isEmailVerified && updatedUser.isMobileVerified;
-
-    let token = null;
-    if (isFullyVerified) {
-      token = jwt.sign(
-        {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          userType: updatedUser.userType,
-          fullName: updatedUser.fullName,
-          mobileNumber: updatedUser.mobileNumber,
-          userProfileKey: updatedUser.userProfileKey,
-          profileImg: updatedUser.profileImg,
-        },
-        env.ACCESS_SECRET_KEY,
-        { expiresIn: '1d' }
-      );
-    }
+    // Generate JWT token for successful mobile verification
+    const token = jwt.sign(
+      {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        userType: updatedUser.userType,
+        fullName: updatedUser.fullName,
+        mobileNumber: updatedUser.mobileNumber,
+        userProfileUrl: updatedUser.userProfileUrl,
+        profileImg: updatedUser.profileImg,
+      },
+      env.ACCESS_SECRET_KEY,
+      { expiresIn: '1d' }
+    );
 
     handleServiceResponse(
       new ServiceResponse(
         ResponseStatus.Success,
-        isFullyVerified
-          ? 'User verified successfully'
-          : `${otpType} verified successfully. Please verify your ${otpType === 'email' ? 'mobile number' : 'email'}.`,
+        'Mobile number verified successfully',
         {
           user: {
             id: updatedUser.id,
@@ -213,13 +202,12 @@ const verifyOTPHandler = async (req: Request, res: Response): Promise<void> => {
             userType: updatedUser.userType,
             isEmailVerified: updatedUser.isEmailVerified,
             isMobileVerified: updatedUser.isMobileVerified,
-            userProfileKey: updatedUser.userProfileKey,
-            isSignedUp: !!updatedUser.userType,
-            isFullyVerified,
+            userProfileUrl: updatedUser.userProfileUrl,
+            isSignedUp: updatedUser.isSignedUp,
+            isFullyVerified: updatedUser.isEmailVerified && updatedUser.isMobileVerified,
             mobileNumber: updatedUser.mobileNumber,
             profileImg: updatedUser.profileImg,
           },
-          isFullyVerified,
           token,
         },
         StatusCodes.OK

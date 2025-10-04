@@ -642,7 +642,7 @@ export const searchCar = async (req: Request, res: Response) => {
           // Get original car owner
           const originalOwner = await userRepo.findOne({
             where: { id: car.userId },
-            select: ['id', 'fullName', 'mobileNumber', 'email', 'userType', 'userProfileKey'],
+            select: ['id', 'fullName', 'mobileNumber', 'email', 'userType', 'userProfileUrl'],
           });
 
           // Get republisher details if car is republished
@@ -650,7 +650,7 @@ export const searchCar = async (req: Request, res: Response) => {
           if (republishInfo) {
             republisher = await userRepo.findOne({
               where: { id: republishInfo.republisherId },
-              select: ['id', 'fullName', 'mobileNumber', 'email', 'userType', 'userProfileKey'],
+              select: ['id', 'fullName', 'mobileNumber', 'email', 'userType', 'userProfileUrl'],
             });
           }
 
@@ -660,9 +660,9 @@ export const searchCar = async (req: Request, res: Response) => {
           // Handle user profile image for primary owner
           // let userProfileImage =
           //   'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
-          // if (primaryOwner?.userProfileKey) {
+          // if (primaryOwner?.userProfileUrl) {
           //   try {
-          //     const presignedUrl = await generatePresignedUrl(primaryOwner.userProfileKey);
+          //     const presignedUrl = await generatePresignedUrl(primaryOwner.userProfileUrl);
           //     if (presignedUrl && presignedUrl.startsWith('http')) {
           //       userProfileImage = presignedUrl;
           //     }
@@ -703,7 +703,7 @@ export const searchCar = async (req: Request, res: Response) => {
                     id: originalOwner.id,
                     fullName: originalOwner.fullName,
                     userType: originalOwner.userType,
-                    userProfileKey: originalOwner.userProfileKey,
+                    userProfileUrl: originalOwner.userProfileUrl,
                     mobileNumber: originalOwner.mobileNumber,
                   }
                 : null,

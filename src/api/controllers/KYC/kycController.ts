@@ -132,7 +132,7 @@ export const createUpdateKyc = async (req: Request, res: Response) => {
         {
           userId: userId,
           message: `Verification Successful! You're now a KYC Verified Agent on Nextdeal - credibility unlocked. opportunities await`,
-          mediakey: user.userProfileKey || undefined,
+          mediakey: user.userProfileUrl || undefined,
           type: NotificationType.VERIFICATION,
           user: user.fullName,
           status: kyc.kycStatus,
@@ -145,7 +145,7 @@ export const createUpdateKyc = async (req: Request, res: Response) => {
         {
           userId: userId,
           message: `Verification Rejected! Your KYC verification has been rejected. Please try again.`,
-          mediakey: user.userProfileKey || undefined,
+          mediakey: user.userProfileUrl || undefined,
           type: NotificationType.VERIFICATION,
           user: user.fullName,
           status: kyc.kycStatus,

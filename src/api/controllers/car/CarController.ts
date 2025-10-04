@@ -935,7 +935,7 @@ export const trendingCar = async (req: Request, res: Response) => {
       userIds.size > 0
         ? await userRepo.find({
             where: { id: In(Array.from(userIds)) },
-            select: ['id', 'fullName', 'userType', 'userProfileKey', 'mobileNumber'],
+            select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber'],
           })
         : [];
 
@@ -1028,7 +1028,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
           id: primaryOwner?.id || (republishInfo ? republishInfo.republisherId : car.userId) || null,
           fullName: primaryOwner?.fullName || 'Unknown Owner',
           userType: primaryOwner?.userType || 'Unknown',
-          userProfileKey: primaryOwner?.userProfileKey || null,
+          userProfileUrl: primaryOwner?.userProfileUrl || null,
           mobileNumber: primaryOwner?.mobileNumber || null,
           userProfile: userProfileImage,
         };
@@ -1051,7 +1051,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
                   id: originalOwner.id,
                   fullName: originalOwner.fullName,
                   userType: originalOwner.userType,
-                  userProfileKey: originalOwner.userProfileKey,
+                  userProfileUrl: originalOwner.userProfileUrl,
                   mobileNumber: originalOwner.mobileNumber,
                 }
               : null,
@@ -1116,7 +1116,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
 //             const userRepo = AppDataSource.getRepository(UserAuth);
 //             originalOwner = await userRepo.findOne({
 //               where: { id: car.userId },
-//               select: ['id', 'fullName', 'userType', 'userProfileKey', 'mobileNumber'],
+//               select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber'],
 //             });
 //             if (originalOwner) {
 //               userMap.set(car.userId, originalOwner);
@@ -1137,7 +1137,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
 //               const userRepo = AppDataSource.getRepository(UserAuth);
 //               republisher = await userRepo.findOne({
 //                 where: { id: republishInfo.republisherId },
-//                 select: ['id', 'fullName', 'userType', 'userProfileKey', 'mobileNumber'],
+//                 select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber'],
 //               });
 //               if (republisher) {
 //                 userMap.set(republishInfo.republisherId, republisher);
@@ -1154,9 +1154,9 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
 //         // Handle user profile image for primary owner
 //         let userProfileImage =
 //           'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
-//         if (primaryOwner?.userProfileKey) {
+//         if (primaryOwner?.userProfileUrl) {
 //           try {
-//             const presignedUrl = await generatePresignedUrl(primaryOwner.userProfileKey);
+//             const presignedUrl = await generatePresignedUrl(primaryOwner.userProfileUrl);
 //             if (presignedUrl && presignedUrl.startsWith('http')) {
 //               userProfileImage = presignedUrl;
 //             }
@@ -1170,7 +1170,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
 //           id: primaryOwner?.id || car.userId || null,
 //           fullName: primaryOwner?.fullName || 'Unknown Owner',
 //           userType: primaryOwner?.userType || 'Unknown',
-//           userProfileKey: primaryOwner?.userProfileKey || null,
+//           userProfileUrl: primaryOwner?.userProfileUrl || null,
 //           mobileNumber: primaryOwner?.mobileNumber || null,
 //           userProfile: userProfileImage,
 //         };
@@ -1194,7 +1194,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
 //                   id: originalOwner.id,
 //                   fullName: originalOwner.fullName,
 //                   userType: originalOwner.userType,
-//                   userProfileKey: originalOwner.userProfileKey,
+//                   userProfileUrl: originalOwner.userProfileUrl,
 //                   mobileNumber: originalOwner.mobileNumber,
 //                 }
 //               : null,
@@ -1308,7 +1308,7 @@ export const offeringCar = async (req: Request, res: Response) => {
       userIds.length > 0
         ? await userRepo.find({
             where: { id: In(userIds) },
-            select: ['id', 'fullName', 'userType', 'userProfileKey', 'mobileNumber', 'email'],
+            select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber', 'email'],
           })
         : [];
 
@@ -1707,7 +1707,7 @@ export const getCarLeads = async (req: Request, res: Response) => {
               id: In(userIds),
               mobileNumber: Not(IsNull()),
             },
-            select: ['id', 'fullName', 'userType', 'userProfileKey', 'mobileNumber'],
+            select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber'],
           })
         : [];
     const userMap = new Map(users.map((u) => [u.id, u]));
@@ -1727,8 +1727,8 @@ export const getCarLeads = async (req: Request, res: Response) => {
             userId: enquiry.userId,
             fullName: user?.fullName || 'Unknown',
             userType: user?.userType || 'User',
-            // userProfileImage: user?.userProfileKey
-            //   ? await generatePresignedUrl(user.userProfileKey)
+            // userProfileImage: user?.userProfileUrl
+            //   ? await generatePresignedUrl(user.userProfileUrl)
             //   : 'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg',
             mobileNumber: user?.mobileNumber || null,
           };
