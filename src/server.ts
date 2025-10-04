@@ -52,11 +52,11 @@ const app: Express = express();
 // Database configuration
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'gondola.proxy.rlwy.net',
-  port:14576,
-  username: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_USERNAME : 'root',
-  password: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'OgrreFUGzPujpeHqzGKuunqZCsKvZYfX',
-  database: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_NAME : 'railway',
+  host: process.env.RAILWAY_DB_HOST || process.env.DEV_AWS_HOST || 'localhost',
+  port: parseInt(process.env.RAILWAY_DB_PORT || process.env.DEV_AWS_PORT || '3306'),
+  username: process.env.RAILWAY_DB_USERNAME || process.env.DEV_AWS_USERNAME || 'root',
+  password: process.env.RAILWAY_DB_PASSWORD || process.env.DEV_AWS_PASSWORD || 'password',
+  database: process.env.RAILWAY_DB_NAME || process.env.DEV_AWS_DB_NAME || 'nextdeal',
   entities: [
     UserAuth,
     CarDetails,
@@ -159,6 +159,15 @@ app.get('/health/deep', async (req, res) => {
       error: error.message,
       timestamp: new Date().toISOString(),
     });
+  }
+});
+
+// Render-specific health check endpoint
+app.get('/health/ready', (req, res) => {
+  if (AppDataSource.isInitialized) {
+    res.status(200).json({ status: 'ready' });
+  } else {
+    res.status(503).json({ status: 'not ready' });
   }
 });
 

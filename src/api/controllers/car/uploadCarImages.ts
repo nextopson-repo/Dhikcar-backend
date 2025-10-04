@@ -1,14 +1,13 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { AppDataSource } from '@/server';
 import { CarImages } from '@/api/entity/CarImages';
 // import watermarkService from '@/api/services/watermarkService';
 import cloudinary from '../s3/clodinaryConfig';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Use CommonJS-compatible path resolution
+const __dirname = path.resolve();
 
 interface UploadRequest extends Request {
   body: {
