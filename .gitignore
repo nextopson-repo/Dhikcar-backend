@@ -37,7 +37,5 @@ locations.csv
 *.sln
 *.sw?
 
-.env
-
 # PM2
 .pm2
