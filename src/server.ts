@@ -89,11 +89,11 @@ const app: Express = express();
 // };
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'gondola.proxy.rlwy.net',
-  port: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PORT : '14576',
+  host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'nozomi.proxy.rlwy.net',
+  port: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PORT : '43057',
   username: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_USERNAME : 'root',
   password:
-    process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'OgrreFUGzPujpeHqzGKuunqZCsKvZYfX',
+    process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'lEhfxeIJPcnHblmqVOluVDNmYeGjKDBn',
   database: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_NAME : 'railway',
   entities: [
     UserAuth,
