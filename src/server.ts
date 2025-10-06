@@ -5,9 +5,10 @@ import helmet from 'helmet';
 import { pino } from 'pino';
 import swaggerUi from 'swagger-ui-express';
 import { DataSource, DataSourceOptions } from 'typeorm';
+
 import errorHandler from '@/common/middleware/errorHandler';
 import requestLogger from '@/common/middleware/requestLogger';
-import { UserCredibility } from './api/entity/Credibility';
+
 import { Address } from './api/entity/Address';
 import { BlockUser } from './api/entity/BlockUser';
 import { CarDetails } from './api/entity/CarDetails';
@@ -16,6 +17,7 @@ import { CarImages } from './api/entity/CarImages';
 import { CarReport } from './api/entity/CarReport';
 import { CarRequirement } from './api/entity/CarRequirement';
 import { Connections } from './api/entity/Connection';
+import { UserCredibility } from './api/entity/Credibility';
 import { DropdownOptions } from './api/entity/DropdownOptions';
 import { IndianCity } from './api/entity/IndianCity';
 import { Location } from './api/entity/Location';
@@ -24,7 +26,7 @@ import { RepublishCarDetails } from './api/entity/RepublishCars';
 import { RequirementEnquiry } from './api/entity/RequirementEnquiry';
 import { SavedCar } from './api/entity/SavedCars';
 import { UserAuth } from './api/entity/UserAuth';
-import { UserKyc } from './api/entity/userkyc';
+import { UserKyc } from './api/entity/UserKyc';
 import { UserLocation } from './api/entity/UserLocation';
 import { UserReport } from './api/entity/UserReport';
 import { UserReview } from './api/entity/UserReview';
@@ -32,6 +34,7 @@ import appleOAuthRoutes from './api/routes/auth/AppleOAuthRoutes';
 import authRoutes from './api/routes/auth/AuthRoutes';
 import googleOAuthRoutes from './api/routes/auth/GoogleOAuthRoutes';
 import s3bucket from './api/routes/aws/s3';
+import car from './api/routes/CarRoutes/CarRoute';
 import ConnectionRoutes from './api/routes/connection/ConnectionRoutes';
 import DashboardRoute from './api/routes/dashboardRoutes/DashboardRoutes';
 import republishRoutes from './api/routes/dashboardRoutes/republishedRoute';
@@ -39,7 +42,6 @@ import DropDownRouter from './api/routes/dropDown/dropdown';
 import kycProcessRoutes from './api/routes/kycProcess/kycProcessRoutes';
 import NotificationRoutes from './api/routes/notificationsRoutes/NotificationRoutes';
 import SocketNotificationRoute from './api/routes/notificationsRoutes/SocketNotificationRoute';
-import car from './api/routes/CarRoutes/CarRoute';
 import reviewRoutes from './api/routes/review/reviewRoute';
 import Profile from './api/routes/UpdateProfileRoute/updateProfileRoute';
 import UserLocationRoutes from './api/routes/User/UserLocationRoutes';
@@ -89,11 +91,11 @@ const app: Express = express();
 // };
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'nozomi.proxy.rlwy.net',
-  port: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PORT : '43057',
+  host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'gondola.proxy.rlwy.net',
+  port: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PORT : '14576',
   username: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_USERNAME : 'root',
   password:
-    process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'lEhfxeIJPcnHblmqVOluVDNmYeGjKDBn',
+    process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'OgrreFUGzPujpeHqzGKuunqZCsKvZYfX',
   database: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_NAME : 'railway',
   entities: [
     UserAuth,
