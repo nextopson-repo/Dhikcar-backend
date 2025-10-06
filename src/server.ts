@@ -52,11 +52,12 @@ const app: Express = express();
 // Database configuration
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: process.env.RAILWAY_DB_HOST || process.env.DEV_AWS_HOST || 'localhost',
-  port: parseInt(process.env.RAILWAY_DB_PORT || process.env.DEV_AWS_PORT || '3306'),
-  username: process.env.RAILWAY_DB_USERNAME || process.env.DEV_AWS_USERNAME || 'root',
-  password: process.env.RAILWAY_DB_PASSWORD || process.env.DEV_AWS_PASSWORD || 'password',
-  database: process.env.RAILWAY_DB_NAME || process.env.DEV_AWS_DB_NAME || 'nextdeal',
+  host: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_HOST : 'srv834.hstgr.io',
+  port: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PORT : '3306',
+  username: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_USERNAME : 'u595570778_dhikcar',
+  password: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PASSWORD : 'Dhikcar-web333',
+  database: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_NAME : 'u595570778_dhikcarweb333',
+
   entities: [
     UserAuth,
     CarDetails,
