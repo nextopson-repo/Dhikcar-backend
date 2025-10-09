@@ -17,7 +17,7 @@ import { sendOtp } from '../../controllers/auth/sendOtpHandler';
 import { signup } from '../../controllers/auth/signupHandler';
 import { updateUserType } from '../../controllers/auth/updateUserTypeHandler';
 import { VerifyOTP } from '../../controllers/auth/verifyOTPHandler';
-// import { authenticate } from '../../middlewares/auth/Authenticate';
+import { authenticate } from '../../middlewares/auth/Authenticate';
 
 const Router = express.Router();
 

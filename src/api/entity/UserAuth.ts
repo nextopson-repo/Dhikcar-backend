@@ -71,6 +71,9 @@ export class UserAuth extends BaseEntity {
   city!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  state!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   pin!: string | null;
 
   @Column({ type: 'boolean', default: false })
