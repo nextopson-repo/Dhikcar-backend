@@ -409,155 +409,6 @@ export const getUserCars = async (req: Request, res: Response) => {
   }
 };
 
-// export const getUserCars = async (req: Request, res: Response) => {
-//   try {
-//     const { userId, search, isSale, carTypes, priceRange, sort = 'newest' } = req.body;
-//     const { page = 1, limit = 10 } = req.query;
-//     const skip = (Number(page) - 1) * Number(limit);
-
-//     console.log('getUserCars called with params:', {
-//       userId,
-//       search,
-//       isSale,
-//       carTypes,
-//       priceRange,
-//       sort,
-//       page,
-//       limit,
-//     });
-
-//     if (!userId) {
-//       return res.status(400).json({ message: 'User ID is required' });
-//     }
-
-//     const carsRepo = AppDataSource.getRepository(CarDetails);
-//     const carEnquiryRepo = AppDataSource.getRepository(CarEnquiry);
-//     const userRepo = AppDataSource.getRepository(UserAuth);
-//     const savedCarsRepo = AppDataSource.getRepository(SavedCar);
-
-//     // Get saved cars for the current user
-//     const SavedCars = await savedCarsRepo.find({
-//       where: { userId },
-//       select: ['carId'],
-//     });
-//     const savedCarIds = SavedCars.map((sc: any) => sc.carId);
-
-//     // Use query builder for more complex queries with search, filter, and sort
-//     const queryBuilder = carsRepo
-//       .createQueryBuilder('car')
-//       .leftJoinAndSelect('car.address', 'address')
-//       .leftJoinAndSelect('car.carImages', 'carImages')
-//       .where('car.userId = :userId', { userId });
-
-//     // Add search functionality
-//     if (search && search.trim()) {
-//       const searchTerm = `%${search.trim()}%`;
-//       console.log('Search term:', searchTerm);
-
-//       queryBuilder.andWhere(
-//         '(car.title LIKE :search OR carDetails.carName LIKE :search OR carDetails.description LIKE :search OR address.city LIKE :search OR address.state LIKE :search OR address.locality LIKE :search OR CAST(carDetails.carPrice AS CHAR) LIKE :search)',
-//         { search: searchTerm }
-//       );
-//     }
-
-//     // Add filters only if they are provided
-//     if (isSale !== undefined) {
-//       queryBuilder.andWhere('car.isSale = :isSale', { isSale });
-//     }
-
-//     if (carTypes && carTypes.length > 0) {
-//       queryBuilder.andWhere('carDetails.subCategory IN (:...carTypes)', { carTypes });
-//     }
-
-//     if (priceRange) {
-//       queryBuilder.andWhere('carDetails.carPrice BETWEEN :minPrice AND :maxPrice', {
-//         minPrice: priceRange.min * 1000, // Convert to actual price
-//         maxPrice: priceRange.max * 1000,
-//       });
-//     }
-
-//     // Get total count for pagination
-//     const totalCount = await queryBuilder.getCount();
-//     console.log('Total count before pagination:', totalCount);
-
-//     // Get carDetails with pagination and sorting
-//     const carDetails = await queryBuilder
-//       .skip(skip)
-//       .take(Number(limit))
-//       .orderBy('carDetails.createdAt', sort === 'newest' ? 'DESC' : 'ASC')
-//       .getMany();
-
-//     console.log('Found carDetails:', carDetails.length);
-//     console.log('Query SQL:', queryBuilder.getSql());
-
-//     if (!carDetails || carDetails.length === 0) {
-//       return res.status(200).json({
-//         message: 'No carDetails found for this user',
-//         carDetails: [],
-//         totalCount: 0,
-//         currentPage: Number(page),
-//         totalPages: 0,
-//         hasMore: false,
-//       });
-//     }
-
-//     const carDetailsWithUrls = await Promise.all(
-//       carDetails.map(async (carDetail) => {
-//         try {
-//           const carDetailResponse = await mapCarDetailsResponse(carDetail);
-
-//           // Get property enquiries for this property
-//           const carEnquiries = await carEnquiryRepo.find({
-//             where: { carId: carDetail.id },
-//             order: { createdAt: 'DESC' },
-//           });
-
-//           const carOwner = await userRepo.findOne({
-//             where: { id: carDetail.userId },
-//             select: ['fullName', 'email', 'mobileNumber'],
-//           });
-//           const time = formateTime(carDetail.createdAt);
-//           return {
-//             ...carDetailResponse,
-//             time: time,
-//             isSaved: savedCarIds.includes(carDetail.id),
-//             enquiries: {
-//               viewProperty: carEnquiries.length,
-//               calling: carEnquiries.filter((enquiry: any) => enquiry.calling).length,
-//             },
-//             ownerDetails: {
-//               name: carOwner?.fullName || null,
-//               email: carOwner?.email || null,
-//               mobileNumber: carOwner?.mobileNumber || null,
-//             },
-//           };
-//         } catch (error) {
-//           console.error('Error processing carDetail:', carDetail.id, error);
-//           return null;
-//         }
-//       })
-//     );
-
-//     // Filter out any null values from failed processing
-//     const validCarDetailsWithUrls = carDetailsWithUrls.filter((carDetail) => carDetail !== null);
-
-//     return res.status(200).json({
-//       message: 'CarDetails retrieved successfully',
-//       properties: validCarDetailsWithUrls,
-//       totalCount,
-//       currentPage: Number(page),
-//       totalPages: Math.ceil(totalCount / Number(limit)),
-//       hasMore: skip + carDetails.length < totalCount,
-//     });
-//   } catch (error) {
-//     console.error('Error in getUserCars:', error);
-//     return res.status(500).json({
-//       message: 'Server error',
-//       error: error instanceof Error ? error.message : 'Unknown error',
-//     });
-//   }
-// };
-
 /**
  * Get cars by their IDs with complete details and owner information
  */
@@ -712,6 +563,7 @@ export const getAllCars = async (req: Request, res: Response) => {
       userType,
       priceRange,
       brands,
+      model,
       modelYear,
       location,
       bodyType,
@@ -729,12 +581,20 @@ export const getAllCars = async (req: Request, res: Response) => {
       isSold: false,
     };
 
+    if (userType?.length > 0) {
+      whereConditions.userType = In(userType);
+    }
+
     if (priceRange?.min !== undefined && priceRange?.max !== undefined) {
       whereConditions.carPrice = Between(priceRange.min, priceRange.max);
     }
 
     if (brands?.length > 0) {
       whereConditions.brand = In(brands);
+    }
+
+    if (model?.length > 0) {
+      whereConditions.model = In(model);
     }
 
     if (modelYear?.min !== undefined && modelYear?.max !== undefined) {
