@@ -354,7 +354,8 @@ export const getUserCars = async (req: Request, res: Response) => {
 
           return {
             id: carDetail.id,
-            title: carDetail.carName,
+            // title: carDetail.carName,
+            title: `${carDetail.brand} ${carDetail.model } ${carDetail.variant}`,
             description: carDetail.description,
             price: carDetail.carPrice,
             isSale: carDetail.isSale,
@@ -369,7 +370,8 @@ export const getUserCars = async (req: Request, res: Response) => {
               state: carDetail.address?.state || null,
               locality: carDetail.address?.locality || null,
             },
-            time,
+            createdAt: carDetail.createdAt,
+            updatedAt: carDetail.updatedAt,
             isSaved: savedCarIds.includes(carDetail.id),
             enquiries: {
               viewProperty: carEnquiries.length,
