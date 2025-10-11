@@ -41,7 +41,7 @@
     "@types/twilio": "^3.19.3",
     "aws-sdk": "^2.1652.0",
     "aws-serverless-express": "^3.4.0",
-    "axios": "^1.7.7",
+    "axios": "^1.12.2",
     "bad-words": "^4.0.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",

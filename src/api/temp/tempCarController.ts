@@ -13,20 +13,23 @@ export class TempCarController {
         userId,
         title,
         description,
-        category,
-        subCategory,
         carPrice,
         addressState,
         addressCity,
         addressLocality,
         carName,
         isSale,
-        // workingWithDealer,
-        width,
-        height,
-        length,
-        groundHeight,
-        unit,
+        brand,
+        model,
+        variant,
+        fuelType,
+        transmission,
+        bodyType,
+        ownership,
+        manufacturingYear,
+        registrationYear,
+        kmDriven,
+        seats
       } = req.body;
 
       // Verify the user is a temporary user
@@ -53,17 +56,20 @@ export class TempCarController {
       car.address = address;
       car.title = title;
       car.description = description;
-      car.category = category;
-      car.subCategory = subCategory;
-      car.carPrice = carPrice || 0;
+      car.carPrice = Number(carPrice) || 0;
       car.carName = carName;
-      car.isSale = isSale;
-      // car.workingWithDealer = workingWithDealer;
-      car.width = width;
-      car.height = height;
-      car.length = length;
-      car.groundHeight = groundHeight;
-      car.unit = unit;
+      car.brand = brand || '';
+      car.model = model || '';
+      car.variant = variant || '';
+      car.fuelType = fuelType || 'Petrol';
+      car.transmission = transmission || 'Manual';
+      car.bodyType = bodyType || '';
+      car.ownership = ownership || '1st';
+      car.manufacturingYear = Number(manufacturingYear) || new Date().getFullYear();
+      car.registrationYear = Number(registrationYear) || new Date().getFullYear();
+      car.kmDriven = Number(kmDriven) || 0;
+      car.seats = Number(seats) || 4;
+      car.isSale = isSale || 'Sell';
       car.isActive = true;
       car.createdBy = 'temp-system';
       car.updatedBy = 'temp-system';
@@ -71,14 +77,8 @@ export class TempCarController {
 
       // Generate description if not provided
       if (!car.description || car.description.trim() === '') {
-        try {
-          const generatedContent = await CarTitleAndDescription.generate(car, title);
-          car.description = generatedContent.description;
-        } catch (descriptionError) {
-          console.error('Error generating description:', descriptionError);
-          // Fallback to basic description if generation fails
-          car.description = `Discover this ${car.subCategory?.toLowerCase() || 'car'} located at ${car.address?.locality || ''}, ${car.address?.city || ''}.`;
-        }
+        // Fallback to basic description if generation fails
+        car.description = `Discover this ${car.model?.toLowerCase() || 'car'} located at ${car.address?.locality || ''}, ${car.address?.city || ''}.`;
       }
 
       await car.save();
@@ -111,15 +111,45 @@ export class TempCarController {
         }
       }
 
+      // Reload the car with relations to get the images
+      const carWithImages = await CarDetails.findOne({
+        where: { id: car.id },
+        relations: ['carImages', 'address']
+      });
+
       res.status(201).json({
         message: 'Temporary car created successfully',
         car: {
-          id: car.id,
-          title: car.title,
-          category: car.category,
-          subCategory: car.subCategory,
-          carPrice: car.carPrice,
-          userId: car.userId,
+          id: carWithImages?.id,
+          title: carWithImages?.title,
+          description: carWithImages?.description,
+          carName: carWithImages?.carName,
+          brand: carWithImages?.brand,
+          model: carWithImages?.model,
+          variant: carWithImages?.variant,
+          fuelType: carWithImages?.fuelType,
+          transmission: carWithImages?.transmission,
+          bodyType: carWithImages?.bodyType,
+          ownership: carWithImages?.ownership,
+          manufacturingYear: carWithImages?.manufacturingYear,
+          registrationYear: carWithImages?.registrationYear,
+          kmDriven: carWithImages?.kmDriven,
+          seats: carWithImages?.seats,
+          isSale: carWithImages?.isSale,
+          carPrice: carWithImages?.carPrice,
+          isActive: carWithImages?.isActive,
+          userId: carWithImages?.userId,
+          address: {
+            state: carWithImages?.address?.state,
+            city: carWithImages?.address?.city,
+            locality: carWithImages?.address?.locality,
+          },
+          carImages: carWithImages?.carImages?.map((img) => ({
+            id: img.id,
+            imageKey: img.imageKey,
+            imgClassifications: img.imgClassifications,
+            accurencyPercent: img.accurencyPercent
+          })) || []
         },
       });
     } catch (error) {
@@ -151,13 +181,7 @@ export class TempCarController {
         carWhereConditions.userId = user?.id;
       }
 
-      if (category) {
-        carWhereConditions.category = category;
-      }
-
-      if (subCategory) {
-        carWhereConditions.subCategory = subCategory;
-      }
+   
 
       if (minPrice) {
         carWhereConditions.carPrice = { $gte: Number(minPrice) };
@@ -256,9 +280,21 @@ export class TempCarController {
           id: prop.id,
           title: prop.title,
           description: prop.description,
-          category: prop.category,
-          subCategory: prop.subCategory,
+          carName: prop.carName,
+          brand: prop.brand,
+          model: prop.model,
+          variant: prop.variant,
+          fuelType: prop.fuelType,
+          transmission: prop.transmission,
+          bodyType: prop.bodyType,
+          ownership: prop.ownership,
+          manufacturingYear: prop.manufacturingYear,
+          registrationYear: prop.registrationYear,
+          kmDriven: prop.kmDriven,
+          seats: prop.seats,
+          isSale: prop.isSale,
           carPrice: prop.carPrice,
+          isActive: prop.isActive,
           address: {
             state: prop.address?.state,
             city: prop.address?.city,
@@ -352,23 +388,14 @@ export class TempCarController {
 
         // Generate description if not provided
         if (!car.description || car.description.trim() === '') {
-          try {
-            const generatedContent = await CarTitleAndDescription.generate(car, car.title);
-            car.description = generatedContent.description;
-          } catch (descriptionError) {
-            console.error('Error generating description for car:', car.title, descriptionError);
-            // Fallback to basic description if generation fails
-            car.description = `Discover this ${car.subCategory?.toLowerCase() || 'car'} located at ${car.address?.locality || ''}, ${car.address?.city || ''}.`;
           }
-        }
 
         await car.save();
 
         createdCars.push({
           id: car.id,
           title: car.title,
-          category: car.category,
-          subCategory: car.subCategory,
+        
           carPrice: car.carPrice,
         });
       }
@@ -403,31 +430,14 @@ export class TempCarController {
         return res.status(403).json({ message: 'Can only generate descriptions for temporary cars' });
       }
 
-      try {
-        const generatedContent = await CarTitleAndDescription.generate(car, car.title);
+      // Generate basic description
+     car.updatedBy = 'temp-system';
+     const createdCars =  await car.save();
 
-        // Update the car with the generated description
-        car.description = generatedContent.description;
-        car.updatedBy = 'temp-system';
-        await car.save();
-
-        res.status(200).json({
-          message: 'Car description generated successfully',
-          car: {
-            id: car.id,
-            title: car.title,
-            description: car.description,
-            category: car.category,
-            subCategory: car.subCategory,
-          },
-        });
-      } catch (generationError) {
-        console.error('Error generating description:', generationError);
-        res.status(500).json({
-          message: 'Failed to generate description',
-          error: 'Description generation service unavailable',
-        });
-      }
+      res.status(200).json({
+        message: 'Car description generated successfully',
+     createdCars    ,
+      });
     } catch (error) {
       console.error('Error generating car description:', error);
       res.status(500).json({ message: 'Internal server error' });
