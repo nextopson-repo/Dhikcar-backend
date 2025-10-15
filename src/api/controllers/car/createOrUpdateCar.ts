@@ -4,7 +4,6 @@ import path from 'path';
 import { UserAuth } from '@/api/entity/UserAuth';
 import { Address } from '@/api/entity/Address';
 import { CarDetails } from '@/api/entity/CarDetails';
-import { CarImages } from '@/api/entity/CarImages';
 import { AppDataSource } from '@/server';
 import cloudinary from '../s3/clodinaryConfig';
 
@@ -181,7 +180,6 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
   try {
     const carRepo = AppDataSource.getRepository(CarDetails);
     const addressRepo = AppDataSource.getRepository(Address);
-    const carImagesRepo = AppDataSource.getRepository(CarImages);
     const userRepo = AppDataSource.getRepository(UserAuth);
     const user = await userRepo.findOne({
       where: { id: userId },
@@ -192,12 +190,7 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
     }
 
     // Process uploaded images
-    let processedImages: Array<{
-      imageKey: string;
-      presignedUrl: string;
-      imgClassifications: string;
-      accurencyPercent: number;
-    }> = [];
+    let processedImages: string[] = [];
 
     if (uploadedFiles.length > 0) {
       console.log(`Processing ${uploadedFiles.length} uploaded images`);
@@ -205,23 +198,13 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
       for (const file of uploadedFiles) {
         try {
           const uploadResult = await uploadImageToCloudinary(file, userId);
-          processedImages.push({
-            imageKey: uploadResult.imageKey,
-            presignedUrl: uploadResult.presignedUrl,
-            imgClassifications: 'other', // Default classification
-            accurencyPercent: 0, // Default accuracy
-          });
+          processedImages.push(uploadResult.presignedUrl);
         } catch (error) {
           console.error(`Error uploading image ${file.originalname}:`, error);
           // If Cloudinary is not configured, create a mock entry for testing
           if (error instanceof Error && error.message.includes('Cloudinary not configured')) {
             console.log('Creating mock image entry for testing purposes');
-            processedImages.push({
-              imageKey: `mock-${Date.now()}-${file.originalname}`,
-              presignedUrl: `https://via.placeholder.com/400x300?text=${encodeURIComponent(file.originalname)}`,
-              imgClassifications: 'other',
-              accurencyPercent: 0,
-            });
+            processedImages.push(`https://via.placeholder.com/400x300?text=${encodeURIComponent(file.originalname)}`);
           }
           // Continue with other images even if one fails
         }
@@ -234,7 +217,7 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
     if (carId) {
       const existingCar = await carRepo.findOne({
         where: { id: carId },
-        relations: ['address', 'carImages'],
+        relations: ['address'],
       });
 
       if (!existingCar) {
@@ -271,31 +254,7 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
 
       // Handle car images update
       if (processedImages.length > 0) {
-        // Delete existing images
-        if (existingCar.carImages.length > 0) {
-          await carImagesRepo.remove(existingCar.carImages);
-        }
-
-        // Create new car images (only with valid imageKey)
-        const carImages = processedImages
-          .filter((imgData) => imgData.imageKey)
-          .map((imgData) => {
-            const carImage = new CarImages();
-            carImage.imageKey = imgData.imageKey;
-            carImage.presignedUrl = imgData.presignedUrl;
-            carImage.imgClassifications = imgData.imgClassifications;
-            carImage.accurencyPercent = imgData.accurencyPercent;
-            carImage.car = existingCar;
-            carImage.createdBy = userId;
-            carImage.updatedBy = userId;
-            return carImage;
-          });
-
-        if (carImages.length > 0) {
-          existingCar.carImages = await carImagesRepo.save(carImages);
-        } else {
-          existingCar.carImages = [];
-        }
+        existingCar.carImages = processedImages;
       }
 
       // Only generate title and description if they don't already exist or if title is not provided in request
@@ -304,7 +263,7 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
       // Fetch the updated car with all relations
       const carWithRelations = await carRepo.findOne({
         where: { id: updatedCar.id },
-        relations: ['address', 'carImages'],
+        relations: ['address'],
       });
 
       return res.status(200).json({
@@ -364,31 +323,16 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
 
     const savedCar = await carRepo.save(newCar);
 
-    // Create car images if provided
+    // Set car images if provided
     if (processedImages.length > 0) {
-      const carImages = processedImages
-        .filter((imgData) => imgData.imageKey)
-        .map((imgData) => {
-          const carImage = new CarImages();
-          carImage.imageKey = imgData.imageKey;
-          carImage.presignedUrl = imgData.presignedUrl;
-          carImage.imgClassifications = imgData.imgClassifications;
-          carImage.accurencyPercent = imgData.accurencyPercent;
-          carImage.car = savedCar;
-          carImage.createdBy = userId;
-          carImage.updatedBy = userId;
-          return carImage;
-        });
-
-      if (carImages.length > 0) {
-        await carImagesRepo.save(carImages);
-      }
+      newCar.carImages = processedImages;
+      await carRepo.save(newCar);
     }
 
     // Fetch the new car with all relations
     const carWithRelations = await carRepo.findOne({
       where: { id: savedCar.id },
-      relations: ['address', 'carImages'],
+      relations: ['address'],
     });
 
     const activeCar = await carRepo.count({

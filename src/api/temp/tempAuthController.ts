@@ -7,7 +7,6 @@ import { CarReport } from '../entity';
 import { BlockUser } from '../entity/BlockUser';
 import { CarDetails } from '../entity/CarDetails';
 import { CarEnquiry } from '../entity/CarEnquiry';
-import { CarImages } from '../entity/CarImages';
 import { CarRequirement } from '../entity/CarRequirement';
 import { Connections } from '../entity/Connection';
 import { RepublishCarDetails } from '../entity/RepublishCars';
@@ -424,7 +423,7 @@ export class TempAuthController {
 
         // 1. Manually delete PropertyImages for this user's properties
         if (userCarIds.length > 0) {
-          await manager.delete(CarImages, { carId: In(userCarIds) });
+          // No need to delete CarImages separately as they are stored as array in CarDetails
         }
 
         // 2. Delete CarEnquiry records that reference this user's properties
@@ -452,7 +451,7 @@ export class TempAuthController {
         await manager.delete(RepublishCarDetails, { ownerId: tempUser.id });
         await manager.delete(RepublishCarDetails, { republisherId: tempUser.id });
 
-        // 8. Delete Properties (CarImages already deleted)
+        // 8. Delete CarDetails (images are stored as array within CarDetails)
         await manager.delete(CarDetails, { userId: tempUser.id });
 
         // 9. Delete CarRequirement records
@@ -513,7 +512,7 @@ export class TempAuthController {
 
           // Check and delete related data with individual error handling
 
-          // 1. Properties (this will cascade delete CarImages) - DELETE FIRST
+          // 1. CarDetails (images are stored as array within CarDetails) - DELETE FIRST
           try {
             const propertyCount = await manager.count(CarDetails, { where: { userId: tempUser.id } });
             if (propertyCount > 0) {
@@ -745,7 +744,7 @@ export class TempAuthController {
           [tempUser.id]
         );
 
-        // Delete properties (this will cascade delete CarImages)
+        // Delete CarDetails (images are stored as array within CarDetails)
         await manager.query(
           `
           DELETE FROM Property WHERE userId = ?
@@ -826,7 +825,7 @@ export class TempAuthController {
 
           // Now delete all other related data
 
-          // 1. Properties (this will cascade delete CarImages)
+          // 1. CarDetails (images are stored as array within CarDetails)
           if (userCarIds.length > 0) {
             await manager.delete(CarDetails, { userId: tempUser.id });
             console.log(`Deleted ${userCarIds.length} Car records`);
@@ -1032,7 +1031,7 @@ export class TempAuthController {
           // STEP 8: Now delete Properties (this will CASCADE delete PropertyImages)
           if (userCarIds.length > 0) {
             await manager.delete(CarDetails, { userId: tempUser.id });
-            console.log(`Deleted ${userCarIds.length} Car records (CarImages CASCADE deleted)`);
+            console.log(`Deleted ${userCarIds.length} Car records (images stored as array within CarDetails)`);
           }
 
           // STEP 9: Delete other user-related records
@@ -1146,18 +1145,7 @@ export class TempAuthController {
           const userCarIds = userCars.map((p) => p.id);
           console.log(`Found ${userCarIds.length} properties owned by user`);
 
-          // STEP 2: Manually delete CarImages for this user's properties
-          if (userCarIds.length > 0) {
-            const imageCount = await manager.count(CarImages, {
-              where: { carId: In(userCarIds) },
-            });
-            if (imageCount > 0) {
-              await manager.delete(CarImages, {
-                carId: In(userCarIds),
-              });
-              console.log(`Deleted ${imageCount} CarImages records for user's properties`);
-            }
-          }
+          // STEP 2: No need to delete CarImages separately as they are stored as array in CarDetails
 
           // STEP 3: Delete CarEnquiry records that reference this user's properties
           if (userCarIds.length > 0) {

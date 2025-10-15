@@ -11,7 +11,6 @@ import { Address } from './api/entity/Address';
 import { BlockUser } from './api/entity/BlockUser';
 import { CarDetails } from './api/entity/CarDetails';
 import { CarEnquiry } from './api/entity/CarEnquiry';
-import { CarImages } from './api/entity/CarImages';
 import { CarReport } from './api/entity/CarReport';
 import { CarRequirement } from './api/entity/CarRequirement';
 import { Connections } from './api/entity/Connection';
@@ -68,7 +67,6 @@ const dataSourceOptions: DataSourceOptions = {
     DropdownOptions,
     UserKyc,
     RepublishCarDetails,
-    CarImages,
     Location,
     CarEnquiry,
     Notifications,

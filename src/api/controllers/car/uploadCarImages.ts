@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { AppDataSource } from '@/server';
-import { CarImages } from '@/api/entity/CarImages';
+import { CarDetails } from '@/api/entity/CarDetails';
 // import watermarkService from '@/api/services/watermarkService';
 import cloudinary from '../s3/clodinaryConfig';
 
@@ -89,15 +89,8 @@ export const uploadCarImagesController = async (req: UploadRequest, res: Respons
       fs.unlinkSync(finalFilePath);
     }
 
-    // Save image info to database
-    const propertyImageRepo = AppDataSource.getRepository(CarImages);
-    const propertyImage = new CarImages();
-    propertyImage.imageKey = result.public_id;
-    propertyImage.presignedUrl = result.secure_url;
-    propertyImage.createdBy = userId;
-    propertyImage.updatedBy = userId;
-
-    await propertyImageRepo.save(propertyImage);
+    // Note: Image URL is returned directly, no need to save to separate table
+    // The image URL can be added to the car's carImages array when creating/updating the car
 
     // Send response
     return res.status(200).json({

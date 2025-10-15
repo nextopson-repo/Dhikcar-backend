@@ -5,7 +5,6 @@ import { Between, In, IsNull, Like, Not } from 'typeorm';
 import { Address } from '@/api/entity/Address';
 import { CarDetails } from '@/api/entity/CarDetails';
 import { CarEnquiry } from '@/api/entity/CarEnquiry';
-import { CarImages } from '@/api/entity/CarImages';
 import { RepublishCarDetails } from '@/api/entity/RepublishCars';
 import { SavedCar } from '@/api/entity/SavedCars';
 import { UserAuth } from '@/api/entity/UserAuth';
@@ -41,17 +40,14 @@ export interface CarRequest extends Omit<Request, 'user'> {
 
 // Interface for car image with presigned URL
 interface CarDetailsImageWithUrl {
-  id: string;
   imageKey: string;
   presignedUrl: string;
-  imgClassifications: 'left' | 'right' | 'front' | 'back' | 'door' | 'roof' | 'window' | 'other';
-  accurencyPercent: number;
 }
 
 // Type for car details response with images that have presigned URLs
 type CarDetailsResponseType = {
   id: string;
-  userId: string;
+  userId: string | null;
   address: Address;
   title: string;
   description: string;
@@ -75,7 +71,7 @@ type CarDetailsResponseType = {
   updatedBy: string;
   createdAt: Date;
   updatedAt: Date;
-  carDetailsImages: CarDetailsImageWithUrl[];
+  carImages: CarDetailsImageWithUrl[];
   enquiries?: {
     viewCars: number;
     calling: number;
@@ -101,7 +97,7 @@ type CarDetailsResponseType = {
 //   isSale: 'Sell' | 'Buy' | null;
 //   carPrice: number;
 //   isSold: boolean;
-//   carDetailsImages: CarDetailsImageWithUrl[];
+//   carImages: CarDetailsImageWithUrl[];
 //   createdBy: string;
 //   updatedBy: string;
 //   createdAt: Date;
@@ -113,8 +109,8 @@ type CarDetailsResponseType = {
 //   groundHeight?: number | null;
 // };
 
-// Helper to map CarImages to CarDetailsImageWithUrl (with presigned URLs)
-async function mapCarDetailsImages(images: CarImages[]): Promise<CarDetailsImageWithUrl[]> {
+// Helper to map car images array to CarDetailsImageWithUrl (with presigned URLs)
+async function mapCarDetailsImages(images: string[]): Promise<CarDetailsImageWithUrl[]> {
   try {
     if (!images || !Array.isArray(images)) {
       console.warn('Images is not an array or is null/undefined');
@@ -123,8 +119,8 @@ async function mapCarDetailsImages(images: CarImages[]): Promise<CarDetailsImage
 
     const mappedImages = await Promise.all(
       images
-        .filter((img) => img && img.imageKey) // Ensure image and imageKey exist
-        .map(async (img) => {
+        .filter((imageKey) => imageKey && imageKey.trim()) // Ensure imageKey exists and is not empty
+        .map(async (imageKey) => {
           try {
             // Check if AWS environment variables are set
             const bucketName = process.env.AWS_S3_BUCKET;
@@ -133,29 +129,20 @@ async function mapCarDetailsImages(images: CarImages[]): Promise<CarDetailsImage
             if (!bucketName || !region) {
               console.warn('AWS environment variables not set, using fallback URL');
               return {
-                id: img.id,
-                imageKey: img.imageKey,
-                presignedUrl: img.presignedUrl || `https://via.placeholder.com/400x300?text=Image+Not+Available`,
-                imgClassifications: img.imgClassifications as CarDetailsImageWithUrl['imgClassifications'],
-                accurencyPercent: img.accurencyPercent || 0,
+                imageKey: imageKey,
+                presignedUrl: `https://via.placeholder.com/400x300?text=Image+Not+Available`,
               };
             }
 
             return {
-              id: img.id,
-              imageKey: img.imageKey,
-              presignedUrl: img.presignedUrl || `https://via.placeholder.com/400x300?text=Image+Not+Available`,
-              imgClassifications: img.imgClassifications as CarDetailsImageWithUrl['imgClassifications'],
-              accurencyPercent: img.accurencyPercent || 0,
+              imageKey: imageKey,
+              presignedUrl: `https://via.placeholder.com/400x300?text=Image+Not+Available`,
             };
           } catch (error) {
-            console.error('Error generating presigned URL for image:', img.imageKey, error);
+            console.error('Error generating presigned URL for image:', imageKey, error);
             return {
-              id: img.id,
-              imageKey: img.imageKey,
-              presignedUrl: img.presignedUrl || 'https://via.placeholder.com/400x300?text=Image+Not+Available',
-              imgClassifications: img.imgClassifications as CarDetailsImageWithUrl['imgClassifications'],
-              accurencyPercent: img.accurencyPercent || 0,
+              imageKey: imageKey,
+              presignedUrl: 'https://via.placeholder.com/400x300?text=Image+Not+Available',
             };
           }
         })
@@ -179,14 +166,14 @@ async function mapCarDetailsResponse(car: CarDetails): Promise<CarDetailsRespons
     const carImages = await mapCarDetailsImages(car.carImages || []);
     return {
       ...car,
-      carDetailsImages: carImages,
+      carImages: carImages,
     };
   } catch (error) {
     console.error('Error in mapCarDetailsResponse:', error);
     // Return car with empty images array if mapping fails
     return {
       ...car,
-      carDetailsImages: [],
+      carImages: [],
     };
   }
 }
@@ -285,7 +272,6 @@ export const getUserCars = async (req: Request, res: Response) => {
     const queryBuilder = carsRepo
       .createQueryBuilder('car')
       .leftJoinAndSelect('car.address', 'address')
-      .leftJoinAndSelect('car.carImages', 'carImages')
       .where('car.userId = :userId', { userId });
 
     // 🔍 Search
@@ -345,10 +331,10 @@ export const getUserCars = async (req: Request, res: Response) => {
             order: { createdAt: 'DESC' },
           });
 
-          const carOwner = await userRepo.findOne({
+          const carOwner = carDetail.userId ? await userRepo.findOne({
             where: { id: carDetail.userId },
             select: ['fullName', 'email', 'mobileNumber'],
-          });
+          }) : null;
 
           const time = formateTime(carDetail.createdAt);
 
@@ -364,7 +350,7 @@ export const getUserCars = async (req: Request, res: Response) => {
             seats: carDetail.seats,
             transmission: carDetail.transmission,
             bodyType: carDetail.bodyType,
-            images: carDetail.carImages?.map((img) => img.presignedUrl) || [],
+            images: carDetail.carImages || [],
             address: {
               city: carDetail.address?.city || null,
               state: carDetail.address?.state || null,
@@ -453,7 +439,6 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
     const queryBuilder = carRepo
       .createQueryBuilder('car')
       .leftJoinAndSelect('car.address', 'address')
-      .leftJoinAndSelect('car.carDetailsImages', 'carDetailsImages')
       .where('car.userId = :userId', { userId });
 
     // Only add carDetailIds filter if showAll is false
@@ -510,10 +495,10 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
             order: { createdAt: 'DESC' },
           });
 
-          const carOwner = await userRepo.findOne({
+          const carOwner = car.userId ? await userRepo.findOne({
             where: { id: car.userId },
             select: ['fullName', 'email', 'mobileNumber'],
-          });
+          }) : null;
 
           return {
             ...carResponse,
@@ -574,55 +559,221 @@ export const getAllCars = async (req: Request, res: Response) => {
     const { page = 1, limit = 10 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
+    // Input validation
+    if (isNaN(Number(page)) || Number(page) < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Page must be a positive integer',
+        error: 'INVALID_PAGE'
+      });
+    }
+
+    if (isNaN(Number(limit)) || Number(limit) < 1 || Number(limit) > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit must be a positive integer between 1 and 100',
+        error: 'INVALID_LIMIT'
+      });
+    }
+
+    // Validate and normalize userType to array
+    let normalizedUserType: string[] | undefined;
+    if (userType) {
+      if (typeof userType === 'string') {
+        normalizedUserType = [userType];
+      } else if (Array.isArray(userType)) {
+        normalizedUserType = userType.filter(type => typeof type === 'string');
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'userType must be a string or array of strings',
+          error: 'INVALID_USER_TYPE'
+        });
+      }
+    }
+
+    // Validate priceRange
+    if (priceRange && (typeof priceRange !== 'object' || !priceRange.min || !priceRange.max)) {
+      return res.status(400).json({
+        success: false,
+        message: 'priceRange must be an object with min and max properties',
+        error: 'INVALID_PRICE_RANGE'
+      });
+    }
+
+    if (priceRange && (isNaN(Number(priceRange.min)) || isNaN(Number(priceRange.max)))) {
+      return res.status(400).json({
+        success: false,
+        message: 'priceRange min and max must be valid numbers',
+        error: 'INVALID_PRICE_RANGE'
+      });
+    }
+
+    // Validate modelYear
+    if (modelYear && (typeof modelYear !== 'object' || !modelYear.min || !modelYear.max)) {
+      return res.status(400).json({
+        success: false,
+        message: 'modelYear must be an object with min and max properties',
+        error: 'INVALID_MODEL_YEAR'
+      });
+    }
+
+    if (modelYear && (isNaN(Number(modelYear.min)) || isNaN(Number(modelYear.max)))) {
+      return res.status(400).json({
+        success: false,
+        message: 'modelYear min and max must be valid numbers',
+        error: 'INVALID_MODEL_YEAR'
+      });
+    }
+
+    // Validate arrays
+    const validateStringArray = (value: any, fieldName: string) => {
+      if (value && !Array.isArray(value)) {
+        return res.status(400).json({
+          success: false,
+          message: `${fieldName} must be an array`,
+          error: `INVALID_${fieldName.toUpperCase()}`
+        });
+      }
+      if (value && !value.every((item: any) => typeof item === 'string')) {
+        return res.status(400).json({
+          success: false,
+          message: `${fieldName} must be an array of strings`,
+          error: `INVALID_${fieldName.toUpperCase()}`
+        });
+      }
+      return null;
+    };
+
+    const brandsValidation = validateStringArray(brands, 'brands');
+    if (brandsValidation) return brandsValidation;
+
+    const modelValidation = validateStringArray(model, 'model');
+    if (modelValidation) return modelValidation;
+
+    const locationValidation = validateStringArray(location, 'location');
+    if (locationValidation) return locationValidation;
+
+    const bodyTypeValidation = validateStringArray(bodyType, 'bodyType');
+    if (bodyTypeValidation) return bodyTypeValidation;
+
+    const fuelTypeValidation = validateStringArray(fuelType, 'fuelType');
+    if (fuelTypeValidation) return fuelTypeValidation;
+
+    // Validate sort
+    if (sort && !['newest', 'oldest'].includes(sort)) {
+      return res.status(400).json({
+        success: false,
+        message: 'sort must be either "newest" or "oldest"',
+        error: 'INVALID_SORT'
+      });
+    }
+
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
 
-    const whereConditions: any = {
-      isSold: false,
-    };
 
-    if (userType?.length > 0) {
-      whereConditions.userType = In(userType);
+    // Build query with proper joins for userType filtering
+    let queryBuilder;
+    try {
+      queryBuilder = carRepo
+        .createQueryBuilder('car')
+        .leftJoinAndSelect('car.address', 'address')
+        .leftJoinAndSelect('car.user', 'user')
+        .where('car.isSold = :isSold', { isSold: false });
+
+      // Add userType filter if provided
+      if (normalizedUserType && normalizedUserType.length > 0) {
+        queryBuilder.andWhere('user.userType IN (:...userTypes)', { userTypes: normalizedUserType });
+      }
+    } catch (queryError) {
+      console.error('Error building query:', queryError);
+      return res.status(500).json({
+        success: false,
+        message: 'Database query error',
+        error: 'QUERY_BUILD_ERROR'
+      });
     }
 
+    // Add other filters
     if (priceRange?.min !== undefined && priceRange?.max !== undefined) {
-      whereConditions.carPrice = Between(priceRange.min, priceRange.max);
+      queryBuilder.andWhere('car.carPrice BETWEEN :minPrice AND :maxPrice', {
+        minPrice: priceRange.min,
+        maxPrice: priceRange.max,
+      });
     }
 
     if (brands?.length > 0) {
-      whereConditions.brand = In(brands);
+      queryBuilder.andWhere('car.brand IN (:...brands)', { brands });
     }
 
     if (model?.length > 0) {
-      whereConditions.model = In(model);
+      queryBuilder.andWhere('car.model IN (:...models)', { models: model });
     }
 
     if (modelYear?.min !== undefined && modelYear?.max !== undefined) {
-      whereConditions.manufacturingYear = Between(modelYear.min, modelYear.max);
+      queryBuilder.andWhere('car.manufacturingYear BETWEEN :minYear AND :maxYear', {
+        minYear: modelYear.min,
+        maxYear: modelYear.max,
+      });
     }
 
     if (bodyType?.length > 0) {
-      whereConditions.bodyType = In(bodyType);
+      queryBuilder.andWhere('car.bodyType IN (:...bodyTypes)', { bodyTypes: bodyType });
     }
 
     if (fuelType?.length > 0) {
-      whereConditions.fuelType = In(fuelType);
+      queryBuilder.andWhere('car.fuelType IN (:...fuelTypes)', { fuelTypes: fuelType });
     }
 
-    const totalCount = await carRepo.count({ where: whereConditions });
+    // Add location filter to query builder
+    if (location?.length > 0) {
+      queryBuilder.andWhere(
+        '(address.state IN (:...locations) OR address.city IN (:...locations))',
+        { locations: location }
+      );
+    }
 
-    // ✅ fetch cars (without user relation)
-    const cars = await carRepo.find({
-      where: whereConditions,
-      relations: ['address', 'carImages'],
-      skip,
-      take: Number(limit),
-      order: {
-        createdAt: sort === 'newest' ? 'DESC' : 'ASC',
-      },
-    });
+    // Add search filter to query builder
+    if (search?.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      queryBuilder.andWhere(
+        '(car.carName LIKE :search OR car.description LIKE :search OR car.brand LIKE :search OR car.model LIKE :search OR address.city LIKE :search OR address.state LIKE :search OR address.locality LIKE :search)',
+        { search: searchTerm }
+      );
+    }
 
-    if (cars.length==0) {
+    let totalCount: number;
+    let cars: CarDetails[];
+
+    try {
+      totalCount = await queryBuilder.getCount();
+    } catch (countError) {
+      console.error('Error getting total count:', countError);
+      return res.status(500).json({
+        success: false,
+        message: 'Database error while counting cars',
+        error: 'COUNT_ERROR'
+      });
+    }
+
+    try {
+      // ✅ fetch cars with proper filtering
+      cars = await queryBuilder
+        .skip(skip)
+        .take(Number(limit))
+        .orderBy('car.createdAt', sort === 'newest' ? 'DESC' : 'ASC')
+        .getMany();
+    } catch (fetchError) {
+      console.error('Error fetching cars:', fetchError);
+      return res.status(500).json({
+        success: false,
+        message: 'Database error while fetching cars',
+        error: 'FETCH_ERROR'
+      });
+    }
+
+    if (cars.length === 0) {
       return res.status(200).json({
         message: 'No cars found',
         cars: [],
@@ -633,59 +784,51 @@ export const getAllCars = async (req: Request, res: Response) => {
       });
     }
 
-    // ✅ location filter
-    let filteredCars = cars;
-    if (location?.length > 0) {
-      filteredCars = cars.filter(
-        (car) =>
-          car.address &&
-          (location.includes(car.address.state) || location.includes(car.address.city))
+    // ✅ add user info manually (user is already loaded via join)
+    let carsWithUser: any[];
+    try {
+      carsWithUser = await Promise.all(
+        cars.map(async (car) => {
+          try {
+            const carResponse = await mapCarDetailsResponse(car);
+            return {
+              ...carResponse,
+              user: car.user || null,
+            };
+          } catch (carError) {
+            console.error('Error mapping car:', car.id, carError);
+            return null;
+          }
+        })
       );
+
+      // Filter out any null values from failed processing
+      carsWithUser = carsWithUser.filter(car => car !== null);
+    } catch (mappingError) {
+      console.error('Error mapping cars:', mappingError);
+      return res.status(500).json({
+        success: false,
+        message: 'Error processing car data',
+        error: 'MAPPING_ERROR'
+      });
     }
-
-    // ✅ search filter
-    if (search?.trim()) {
-      const searchTerm = search.trim().toLowerCase();
-      filteredCars = filteredCars.filter(
-        (car) =>
-          car.carName?.toLowerCase().includes(searchTerm) ||
-          car.description?.toLowerCase().includes(searchTerm) ||
-          car.brand?.toLowerCase().includes(searchTerm) ||
-          car.model?.toLowerCase().includes(searchTerm) ||
-          car.address?.city?.toLowerCase().includes(searchTerm) ||
-          car.address?.state?.toLowerCase().includes(searchTerm) ||
-          car.address?.locality?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    // ✅ add user info manually
-    const carsWithUser = await Promise.all(
-      filteredCars.map(async (car) => {
-        const user = await userRepo.findOne({
-          where: { id: car.userId },
-          select: ['id', 'fullName', 'userType'], 
-        });
-
-        const carResponse = await mapCarDetailsResponse(car);
-
-        return {
-          ...carResponse,
-          user: user || null,
-        };
-      })
-    );
 
     return res.status(200).json({
+      success: true,
       message: 'Cars retrieved successfully',
       cars: carsWithUser,
-      totalCount: filteredCars.length,
+      totalCount: totalCount,
       currentPage: Number(page),
-      totalPages: Math.ceil(filteredCars.length / Number(limit)),
-      hasMore: skip + filteredCars.length < totalCount,
+      totalPages: Math.ceil(totalCount / Number(limit)),
+      hasMore: skip + cars.length < totalCount,
     });
   } catch (error) {
-    console.error('Error in getAllCars:', error);
-    return res.status(500).json({ message: 'Server error' });
+    console.error('Unexpected error in getAllCars:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: 'UNEXPECTED_ERROR'
+    });
   }
 };
 
@@ -741,7 +884,7 @@ export const trendingCar = async (req: Request, res: Response) => {
 
     const cars = await carRepo.find({
       where: whereClause,
-      relations: ['address', 'carImages'],
+      relations: ['address'],
       order: { createdAt: 'DESC' },
     });
 
@@ -779,7 +922,7 @@ export const trendingCar = async (req: Request, res: Response) => {
       where: {
         id: In(Array.from(allCarIds)),
       },
-      relations: ['address', 'carImages'],
+      relations: ['address'],
     });
 
     const sortedCars = allCars.sort((a, b) => (enquiryCounts[b.id] || 0) - (enquiryCounts[a.id] || 0));
@@ -880,7 +1023,7 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
         const carResponse = await mapCarDetailsResponse(car);
         const republishInfo = republishMap.get(car.id);
 
-        const originalOwner = userMap.get(car.userId);
+        const originalOwner = car.userId ? userMap.get(car.userId) : null;
 
         let republisher = null;
         if (republishInfo) {
@@ -1109,7 +1252,6 @@ export const offeringCar = async (req: Request, res: Response) => {
     const queryBuilder = carRepo
       .createQueryBuilder('car')
       .leftJoinAndSelect('car.address', 'address')
-      .leftJoinAndSelect('car.carImages', 'carImages')
       .where('car.isActive = :isActive', { isActive: true })
       .andWhere('car.isSold = :isSold', { isSold: false });
 
@@ -1136,7 +1278,6 @@ export const offeringCar = async (req: Request, res: Response) => {
       const fallbackQueryBuilder = carRepo
         .createQueryBuilder('car')
         .leftJoinAndSelect('car.address', 'address')
-        .leftJoinAndSelect('car.carImages', 'carImages')
         .where('car.isActive = :isActive', { isActive: true })
         .andWhere('car.isSold = :isSold', { isSold: false });
 
@@ -1171,7 +1312,7 @@ export const offeringCar = async (req: Request, res: Response) => {
       });
     }
 
-    const userIds = [...new Set(cars.map((p) => p.userId))];
+    const userIds = [...new Set(cars.map((p) => p.userId).filter((id): id is string => id !== null))];
     const users =
       userIds.length > 0
         ? await userRepo.find({
@@ -1191,7 +1332,7 @@ export const offeringCar = async (req: Request, res: Response) => {
         return true;
       }
 
-      const carOwner = userMap.get(car.userId);
+      const carOwner = car.userId ? userMap.get(car.userId) : null;
       if (!carOwner) {
         return true;
       }
@@ -1209,7 +1350,7 @@ export const offeringCar = async (req: Request, res: Response) => {
           const carResponse = await mapCarDetailsResponse(car);
           const republishInfo = republishedCars.find((rp) => rp.carId === car.id);
 
-          const originalOwner = userMap.get(car.userId);
+          const originalOwner = car.userId ? userMap.get(car.userId) : null;
           // let republisher = null;
           // if (republishInfo) {
           //   republisher = userMap.get(republishInfo.republisherId);
@@ -1318,13 +1459,12 @@ export const deleteCar = async (req: Request, res: Response) => {
 
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
-    const carImagesRepo = AppDataSource.getRepository(CarImages);
     const carEnquiryRepo = AppDataSource.getRepository(CarEnquiry);
 
     // Get the car with relations
     const car = await carRepo.findOne({
       where: { id: carId },
-      relations: ['carImages', 'address'],
+      relations: ['address'],
     });
 
     const user = await userRepo.findOne({
@@ -1358,10 +1498,7 @@ export const deleteCar = async (req: Request, res: Response) => {
     await queryRunner.startTransaction();
 
     try {
-      // Delete related records first
-      if (car.carImages && car.carImages.length > 0) {
-        await carImagesRepo.remove(car.carImages);
-      }
+      // No need to delete car images separately as they are stored as array in car
 
       // Delete property enquiries
       await carEnquiryRepo.delete({ carId: car.id });
@@ -1645,7 +1782,7 @@ export const shareCarEmailNotification = async (req: Request, res: Response) => 
     // Get car with relations
     const car = await carRepo.findOne({
       where: { id: carId },
-      relations: ['address', 'carImages'],
+      relations: ['address'],
     });
 
     if (!car) {
@@ -1668,9 +1805,9 @@ export const shareCarEmailNotification = async (req: Request, res: Response) => 
     }
 
     // Get car owner
-    const carOwner = await userRepo.findOne({
+    const carOwner = car.userId ? await userRepo.findOne({
       where: { id: car.userId },
-    });
+    }) : null;
 
     if (!carOwner || !carOwner.email) {
       return res.status(404).json({
@@ -1683,11 +1820,7 @@ export const shareCarEmailNotification = async (req: Request, res: Response) => 
     let carImageUrl = '';
     if (car.carImages && car.carImages.length > 0) {
       const firstImage = car.carImages[0];
-      if (firstImage.presignedUrl) {
-        carImageUrl = firstImage.presignedUrl;
-      } else if (firstImage.imageKey) {
-        // carImageUrl = await generatePresignedUrl(firstImage.imageKey);
-      }
+      carImageUrl = firstImage; // carImages is now an array of strings (image keys/URLs)
     }
 
     const email = carOwner.email;
@@ -1883,7 +2016,7 @@ export const updateWorkingWithOwner = async (req: Request, res: Response) => {
     // Find the car
     const car = await carRepo.findOne({
       where: { id: carId },
-      relations: ['address', 'carImages'],
+      relations: ['address'],
     });
 
     if (!car) {

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 
 import { CarDetails } from '@/api/entity/CarDetails';
 import { CarEnquiry } from '@/api/entity/CarEnquiry';
-import { CarImages } from '@/api/entity/CarImages';
 import { NotificationType } from '@/api/entity/Notifications';
 import { RepublishCarDetails } from '@/api/entity/RepublishCars';
 import { UserAuth } from '@/api/entity/UserAuth';
