@@ -23,10 +23,10 @@ export class CarDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column('uuid')
-  userId!: string;
+  @Column('uuid', { nullable: true })
+  userId!: string | null;
 
-  @ManyToOne(() => UserAuth, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserAuth, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: UserAuth;
 

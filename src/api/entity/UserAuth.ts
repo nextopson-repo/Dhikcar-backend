@@ -170,8 +170,11 @@ export class UserAuth extends BaseEntity {
   reportedByUsers!: UserReport[];
 
   // Property relations
-  // @OneToMany(() => CarDetails, (carDetails) => carDetails.user)
-  // carDetails!: CarDetails[];
+  // Keep relation for user-to-cars to enable cascade operations from user
+  // Note: The owning side is on CarDetails with userId FK
+  // import left commented at top originally; we avoid circular deps by string callback
+  @OneToMany('CarDetails', 'user')
+  carDetails!: any[];
 
   // PropertyRequirement relations
   @OneToMany(() => CarRequirement, (requirement: any) => requirement.user)

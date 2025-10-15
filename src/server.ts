@@ -91,8 +91,8 @@ const AppDataSource = new DataSource(dataSourceOptions);
 
 // Middlewares
 app.set('trust proxy', true);
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '1024mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1024mb' }));
 app.use(cookieParser());
 app.use(cors({ origin: (_, cb) => cb(null, true), credentials: true }));
 app.use(helmet());

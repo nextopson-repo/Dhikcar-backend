@@ -162,13 +162,14 @@ export class TempCarController {
   static async getAllCars(req: Request, res: Response) {
     try {
       const { user } = req; // From auth middleware
-      const { page = 1, limit = 10, category, subCategory, minPrice, maxPrice, mobileNumber } = req.query;
+      const { page = 1, limit = 10, minPrice, maxPrice, mobileNumber, brand, model, fuelType, transmission, bodyType, ownership } = req.query;
 
+      let mobileUser: UserAuth | null = null;
       if (mobileNumber) {
-        const user = await UserAuth.findOne({
+        mobileUser = await UserAuth.findOne({
           where: { mobileNumber: mobileNumber as string, accountType: 'temporary' },
         });
-        if (!user) {
+        if (!mobileUser) {
           return res.status(404).json({ message: 'User not found' });
         }
       }
@@ -176,10 +177,15 @@ export class TempCarController {
       const carWhereConditions: any = {};
 
       // Apply filters
-
-      if (mobileNumber) {
-        carWhereConditions.userId = user?.id;
+      if (mobileUser) {
+        carWhereConditions.userId = mobileUser.id;
       }
+      if (brand) carWhereConditions.brand = String(brand);
+      if (model) carWhereConditions.model = String(model);
+      if (fuelType) carWhereConditions.fuelType = String(fuelType);
+      if (transmission) carWhereConditions.transmission = String(transmission);
+      if (bodyType) carWhereConditions.bodyType = String(bodyType);
+      if (ownership) carWhereConditions.ownership = String(ownership);
 
    
 
@@ -209,10 +215,10 @@ export class TempCarController {
       const filteredAllCars = allCars.filter((car) => {
         if (user) {
           // If user is logged in, show only real cars
-          return car.user.accountType === 'real';
+          return car.user?.accountType === 'real';
         } else {
-          // For visitors, show both real and temporary cars
-          return ['real', 'temporary'].includes(car.user.accountType);
+          // For visitors, show both real and temporary cars; also allow cars without a user
+          return !car.user || ['real', 'temporary'].includes(car.user.accountType);
         }
       });
 
@@ -226,29 +232,42 @@ export class TempCarController {
 
       res.status(200).json({
         message: 'Cars retrieved successfully',
-        cars: paginatedCars.map((prop: any) => ({
-          id: prop.id,
-          title: prop.title,
-          description: prop.description,
-          category: prop.category,
-          subCategory: prop.subCategory,
-          carPrice: prop.carPrice,
-          carpetArea: prop.carpetArea,
-          totalBathrooms: prop.totalBathrooms,
-          totalRooms: prop.totalRooms,
+        cars: paginatedCars.map((car: any) => ({
+          id: car.id,
+          title: car.title,
+          description: car.description,
+          carName: car.carName,
+          brand: car.brand,
+          model: car.model,
+          variant: car.variant,
+          fuelType: car.fuelType,
+          transmission: car.transmission,
+          bodyType: car.bodyType,
+          ownership: car.ownership,
+          manufacturingYear: car.manufacturingYear,
+          registrationYear: car.registrationYear,
+          kmDriven: car.kmDriven,
+          seats: car.seats,
+          isSale: car.isSale,
+          carPrice: car.carPrice,
+          isActive: car.isActive,
+          userId: car.userId,
           address: {
-            state: prop.address?.state,
-            city: prop.address?.city,
-            locality: prop.address?.locality,
+            state: car.address?.state,
+            city: car.address?.city,
+            locality: car.address?.locality,
           },
-          images: prop.carImages?.map((img: any) => img.imageKey) || [],
-          user: {
-            id: prop.user.id,
-            fullName: prop.user.fullName,
-            userType: prop.user.userType,
-            accountType: prop.user.accountType,
-          },
-          createdAt: prop.createdAt,
+          carImages: (car.carImages || []).map((img: any) => ({ id: img.id, imageKey: img.imageKey })),
+          images: (car.carImages || []).map((img: any) => img.imageKey),
+          user: car.user
+            ? {
+                id: car.user.id,
+                fullName: car.user.fullName,
+                userType: car.user.userType,
+                accountType: car.user.accountType,
+              }
+            : null,
+          createdAt: car.createdAt,
         })),
         pagination: {
           page: Number(page),
@@ -264,7 +283,7 @@ export class TempCarController {
     }
   }
 
-  // Get properties by temporary user
+  // Get cars by temporary user
   static async getTempUserCars(req: Request, res: Response) {
     try {
       const { userId } = req.params;
@@ -314,6 +333,8 @@ export class TempCarController {
   static async deleteTempCar(req: Request, res: Response) {
     try {
       const { carId } = req.params;
+      
+      console.log('carId:', carId);
 
       const car = await CarDetails.findOne({
         where: { id: carId },
@@ -324,7 +345,7 @@ export class TempCarController {
         return res.status(404).json({ message: 'Property not found' });
       }
 
-      if (car.user.accountType !== 'temporary') {
+      if (car.user && car.user.accountType !== 'temporary') {
         return res.status(403).json({ message: 'Can only delete temporary cars' });
       }
 
@@ -426,7 +447,7 @@ export class TempCarController {
       }
 
       // Verify the user is a temporary user
-      if (car.user.accountType !== 'temporary') {
+      if (car.user && car.user.accountType !== 'temporary') {
         return res.status(403).json({ message: 'Can only generate descriptions for temporary cars' });
       }
 
