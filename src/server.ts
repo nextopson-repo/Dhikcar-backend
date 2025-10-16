@@ -79,7 +79,7 @@ const dataSourceOptions: DataSourceOptions = {
     IndianCity,
     CarReport,
   ],
-  synchronize: true,
+  synchronize: false,
   logging: false,
   entitySkipConstructor: false,
   extra: { connectionLimit: 10 },
