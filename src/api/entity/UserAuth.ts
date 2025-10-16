@@ -68,6 +68,9 @@ export class UserAuth extends BaseEntity {
   landmark!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  locality!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   city!: string | null;
 
   @Column({ type: 'varchar', nullable: true })

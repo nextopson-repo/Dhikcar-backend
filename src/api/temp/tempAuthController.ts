@@ -291,7 +291,7 @@ export class TempAuthController {
   // Create temporary user account (simplified - no email required)
   static async createTempUser(req: Request, res: Response) {
     try {
-      const { fullName, mobileNumber, userType } = req.body;
+      const { fullName, mobileNumber, userType, addressLocality, addressCity, addressState } = req.body;
 
       if (!fullName || !mobileNumber || !userType) {
         return res.status(400).json({
@@ -313,6 +313,9 @@ export class TempAuthController {
       tempUser.accountType = 'temporary';
       tempUser.isMobileVerified = true; // Auto-verify for temp accounts
       tempUser.isSignedUp = true;
+      tempUser.state = addressState;
+      tempUser.city = addressCity;
+      tempUser.locality = addressLocality;
       tempUser.shouldDeleteOnRealSignup = true; // Mark for deletion when real user signs up
       tempUser.createdBy = 'temp-system';
       tempUser.updatedBy = 'temp-system';
@@ -327,6 +330,9 @@ export class TempAuthController {
           mobileNumber: tempUser.mobileNumber,
           userType: tempUser.userType,
           accountType: tempUser.accountType,
+          addressCity: tempUser.city,
+          addressLocality: tempUser.locality,
+          addressState: tempUser.state,
         },
       });
     } catch (error) {

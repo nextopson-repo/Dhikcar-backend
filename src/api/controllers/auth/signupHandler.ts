@@ -12,6 +12,7 @@ import { handleServiceResponse } from '@/common/utils/httpHandlers';
 import { sendEmailOTP } from '@/common/utils/mailService';
 import { AppDataSource } from '@/server';
 import { bundleNotification } from '../notification/NotificationController';
+import { Address } from '@/api/entity/Address';
 
 // Validation schema for signup request
 const signupSchema = z.object({
@@ -59,7 +60,7 @@ const signupHandler = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { fullName, email } = req.body;
+    const { fullName, email, userType, addressCity, addressLocality, addressState } = req.body;
 
     // Extract and verify JWT token from Authorization header
     const authHeader = req.headers.authorization;
@@ -115,6 +116,11 @@ const signupHandler = async (req: Request, res: Response): Promise<void> => {
       existingUser.isSignedUp = true;
       existingUser.isEmailVerified = true;
       existingUser.isMobileVerified = true;
+      existingUser.state= addressState;
+      existingUser.city= addressCity;
+      existingUser.locality= addressLocality;
+      existingUser.userType= userType;
+
 
       // Generate new OTPs
       existingUser.generateEmailOTP();
@@ -130,6 +136,10 @@ const signupHandler = async (req: Request, res: Response): Promise<void> => {
       newUser.isSignedUp = true;
       newUser.isEmailVerified = true;
       newUser.isMobileVerified = true;
+      newUser.state= addressState;
+      newUser.city= addressCity;
+      newUser.locality= addressLocality;
+      newUser.userType= userType;
 
       // Generate OTPs
       newUser.generateEmailOTP();
@@ -179,6 +189,9 @@ const signupHandler = async (req: Request, res: Response): Promise<void> => {
             email: savedUser.email,
             mobileNumber: savedUser.mobileNumber,
             userType: savedUser.userType,
+            addressState: savedUser.state,
+            addressCity: savedUser.city,
+            addressLocality: savedUser.locality,
             isEmailVerified: savedUser.isEmailVerified,
             isMobileVerified: savedUser.isMobileVerified,
             isSignedUp: savedUser.isSignedUp,
