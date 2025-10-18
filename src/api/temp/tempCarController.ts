@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import cloudinary from '../controllers/s3/clodinaryConfig';
 import fs from 'fs';
 
+import { UserAuth } from '../entity/UserAuth';
 import { Address } from '../entity/Address';
 import { CarDetails } from '../entity/CarDetails';
-import { UserAuth } from '../entity/UserAuth';
 
 // Types for request bodies
 interface CreateTempCarRequest extends Request {
@@ -132,7 +132,6 @@ interface ApiResponse<T = any> {
 }
 
 export class TempCarController {
-  // Create temporary car
   static async createTempCar(req: CreateTempCarRequest, res: Response<ApiResponse<CarResponse>>) {
     try {
       const {

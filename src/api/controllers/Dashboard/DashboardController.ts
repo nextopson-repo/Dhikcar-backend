@@ -44,29 +44,6 @@ export interface CarRequest extends Omit<Request, 'user'> {
   user?: RequestUser;
 }
 
-// type CarResponseType = {
-//   id: string;
-//   userId: string;
-//   address: Address;
-//   category: string;
-//   subCategory: string;
-//   carName: string | null;
-//   isSale: boolean | null;
-//   totalBathrooms: number | null;
-//   totalRooms: number | null;
-//   carPrice: number;
-//   width: number | null;
-//   height: number | null;
-//   length: number | null;
-//   groundHeight: number | null;
-//   createdBy: string;
-//   updatedBy: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-//   isSold: boolean | null;
-//   conversion: string | null;
-// };
-
 // create saved property
 export const createSavedCar = async (req: Request, res: Response) => {
   try {
@@ -80,12 +57,23 @@ export const createSavedCar = async (req: Request, res: Response) => {
 
     // First check if property exists
     const carDetails = await carRepo.findOne({
-      where: { id: carId },
-      relations: ['carImages', 'address'],
+      where: { id: carId }
     });
 
     if (!carDetails) {
       return res.status(404).json({ message: 'Car not found' });
+    }
+
+     // ✅ Duplicate check: agar already saved hai to return kar do
+    const existing = await savedCarRepo.findOne({
+      where: { carId, userId }
+    });
+    if (existing) {
+      return res.status(200).json({
+        message: 'Car already saved',
+        newCar: existing,
+        carDetails,
+      });
     }
 
     const savedCar = savedCarRepo.create({
@@ -136,8 +124,7 @@ export const getSavedCars = async (req: Request, res: Response) => {
     }
     const carIds = savedCars.map((sp) => sp.carId);
     const cars = await carRepo.find({
-      where: { id: In(carIds) },
-      relations: ['carImages', 'address'],
+      where: { id: In(carIds) }
     });
     const carMap = new Map(cars.map((p) => [p.id, p]));
     const result = savedCars.map((sp) => ({

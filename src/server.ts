@@ -51,11 +51,11 @@ const app: Express = express();
 // Database configuration
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_HOST : 'srv834.hstgr.io',
-  port: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PORT : '3306',
-  username: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_USERNAME : 'u595570778_dhikcar',
-  password: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PASSWORD : 'Dhikcar-web333',
-  database: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_NAME : 'u595570778_dhikcarweb333',
+  host: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_HOST : 'nozomi.proxy.rlwy.net',
+  port: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PORT : '43057',
+  username: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_USERNAME : 'root',
+  password: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PASSWORD : 'lEhfxeIJPcnHblmqVOluVDNmYeGjKDBn',
+  database: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_NAME : 'railway',
 
   entities: [
     UserAuth,
