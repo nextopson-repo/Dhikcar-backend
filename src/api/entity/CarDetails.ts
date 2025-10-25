@@ -16,7 +16,7 @@ import {
 import { Address } from './Address';
 import { CarImages } from './CarImages';
 import { RepublishCarDetails } from './RepublishCars';
-// import { UserAuth } from './UserAuth';
+import { UserAuth } from './UserAuth';
 
 @Entity('CarDetails')
 export class CarDetails extends BaseEntity {
@@ -26,9 +26,9 @@ export class CarDetails extends BaseEntity {
   @Column('uuid')
   userId!: string;
 
-  // @ManyToOne(() => UserAuth, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'userId' })
-  // user!: UserAuth;
+  @ManyToOne(() => UserAuth, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user!: UserAuth;
 
   @ManyToOne(() => Address, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'addressId' })

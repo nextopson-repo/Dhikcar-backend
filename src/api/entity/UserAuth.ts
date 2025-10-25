@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 
 import { BlockUser } from './BlockUser';
-// import { CarDetails } from './CarDetails';
+import { CarDetails } from './CarDetails';
 import { CarRequirement } from './CarRequirement';
 import { Connections } from './Connection';
 import { RepublishCarDetails } from './RepublishCars';
@@ -167,8 +167,8 @@ export class UserAuth extends BaseEntity {
   reportedByUsers!: UserReport[];
 
   // Property relations
-  // @OneToMany(() => CarDetails, (carDetails) => carDetails.user)
-  // carDetails!: CarDetails[];
+  @OneToMany(() => CarDetails, (carDetails) => carDetails.user)
+  carDetails!: CarDetails[];
 
   // PropertyRequirement relations
   @OneToMany(() => CarRequirement, (requirement: any) => requirement.user)

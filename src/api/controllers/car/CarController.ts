@@ -704,6 +704,7 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
 /**
  * Get all cars with pagination, filtering, and user type restrictions
  */
+
 export const getAllCars = async (req: Request, res: Response) => {
   try {
     const { 
@@ -721,46 +722,13 @@ export const getAllCars = async (req: Request, res: Response) => {
     const skip = (Number(page) - 1) * Number(limit);
 
     const carRepo = AppDataSource.getRepository(CarDetails);
-    const userRepo = AppDataSource.getRepository(UserAuth);
 
-    // Build where conditions
-    const whereConditions: any = {
-      isActive: true,
-      isSold: false,
-    };
+    // ✅ Get total count of cars
+    const totalCount = await carRepo.count();
 
-    // Price range filter
-    if (priceRange && priceRange.min !== undefined && priceRange.max !== undefined) {
-      whereConditions.carPrice = Between(priceRange.min, priceRange.max);
-    }
-
-    // Brand filter
-    if (brands && brands.length > 0) {
-      whereConditions.brand = In(brands);
-    }
-
-    // Model year filter
-    if (modelYear && modelYear.min !== undefined && modelYear.max !== undefined) {
-      whereConditions.manufacturingYear = Between(modelYear.min, modelYear.max);
-    }
-
-    // Body type filter
-    if (bodyType && bodyType.length > 0) {
-      whereConditions.bodyType = In(bodyType);
-    }
-
-    // Fuel type filter
-    if (fuelType && fuelType.length > 0) {
-      whereConditions.fuelType = In(fuelType);
-    }
-
-    // Get total count
-    const totalCount = await carRepo.count({ where: whereConditions });
-
-    // Get cars with pagination and sorting
+    // ✅ Get cars with relations including user
     const cars = await carRepo.find({
-      where: whereConditions,
-      relations: ['address', 'carImages'],
+      relations: ['address', 'carImages', 'user'], // user relation added
       skip,
       take: Number(limit),
       order: {
@@ -771,7 +739,7 @@ export const getAllCars = async (req: Request, res: Response) => {
     if (!cars || cars.length === 0) {
       return res.status(200).json({
         message: 'No cars found',
-        cars: [],
+        properties: [],
         totalCount: 0,
         currentPage: Number(page),
         totalPages: 0,
@@ -787,23 +755,34 @@ export const getAllCars = async (req: Request, res: Response) => {
       );
     }
 
-    // Apply search filter if provided
-    if (search && search.trim()) {
-      const searchTerm = search.trim().toLowerCase();
-      filteredCars = filteredCars.filter(car => 
-        (car.carName && car.carName.toLowerCase().includes(searchTerm)) ||
-        (car.description && car.description.toLowerCase().includes(searchTerm)) ||
-        (car.brand && car.brand.toLowerCase().includes(searchTerm)) ||
-        (car.model && car.model.toLowerCase().includes(searchTerm)) ||
-        (car.address?.city && car.address.city.toLowerCase().includes(searchTerm)) ||
-        (car.address?.state && car.address.state.toLowerCase().includes(searchTerm)) ||
-        (car.address?.locality && car.address.locality.toLowerCase().includes(searchTerm))
-      );
-    }
+    // ✅ Filter cars based on userType and workingWithDealer
+    const filteredCars = cars.filter((car) => {
+      if (
+        userType === 'Dealer' &&
+        (car.user.userType === 'Owner' || car.user.userType === 'EndUser') &&
+        car.workingWithDealer === false
+      ) {
+        return false;
+      }
+      return true;
+    });
 
+    const validCars = filteredCars;
+
+    // ✅ Map cars with proper format including user details
     const carsWithUrls = await Promise.all(
-      filteredCars.map(async (car) => {
+      validCars.map(async (car) => {
         const carResponse = await mapCarDetailsResponse(car);
+
+        // ✅ attach user details carefully (avoid sensitive info)
+        carResponse.user = {
+          id: car.user.id,
+          fullName: car.user.fullName,
+          email: car.user.email,
+          mobileNumber: car.user.mobileNumber,
+          userType: car.user.userType,
+        };
+
         return carResponse;
       })
     );
@@ -821,6 +800,83 @@ export const getAllCars = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+// export const getAllCars = async (req: Request, res: Response) => {
+//   try {
+//     const { userType } = req.body;
+//     const { page = 1, limit = 10 } = req.query;
+//     const skip = (Number(page) - 1) * Number(limit);
+
+//     const carRepo = AppDataSource.getRepository(CarDetails);
+//     const userRepo = AppDataSource.getRepository(UserAuth);
+
+//     // Get total count
+//     const totalCount = await carRepo.count();
+
+//     // Get cars with pagination
+//     const cars = await carRepo.find({
+//       relations: ['address', 'carImages', 'user'],
+//       skip,
+//       take: Number(limit),
+//       order: {
+//         createdAt: 'DESC',
+//       },
+//     });
+
+//     if (!cars || cars.length === 0) {
+//       return res.status(200).json({
+//         message: 'No cars found',
+//         cars: [],
+//         totalCount: 0,
+//         currentPage: Number(page),
+//         totalPages: 0,
+//         hasMore: false,
+//       });
+//     }
+
+//     // Filter properties based on userType and workingWithOwner
+//     const filteredCars = await Promise.all(
+//       cars.map(async (car) => {
+//         const carOwner = await userRepo.findOne({
+//           where: { id: car.userId },
+//           select: ['userType'],
+//         });
+
+//         // If requesting user is an agent and property owner is an owner/endUser who doesn't work with dealer for this property
+//         if (
+//           userType === 'Dealer' &&
+//           (carOwner?.userType === 'Owner' || carOwner?.userType === 'EndUser') &&
+//           car.workingWithDealer === false
+//         ) {
+//           return null;
+//         }
+//         return car;
+//       })
+//     );
+
+//     // Remove null values from filtered cars
+//     const validCars = filteredCars.filter((car) => car !== null);
+
+//     const carsWithUrls = await Promise.all(
+//       validCars.map(async (car) => {
+//         const carResponse = await mapCarDetailsResponse(car);
+//         return carResponse;
+//       })
+//     );
+
+//     return res.status(200).json({
+//       message: 'Cars retrieved successfully',
+//       properties: carsWithUrls,
+//       totalCount: validCars.length,
+//       currentPage: Number(page),
+//       totalPages: Math.ceil(validCars.length / Number(limit)),
+//       hasMore: skip + validCars.length < totalCount,
+//     });
+//   } catch (error) {
+//     console.error('Error in getAllCars:', error);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// };
 
 /**
  * Search cars by category, subcategory, and city
