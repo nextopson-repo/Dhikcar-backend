@@ -6,7 +6,6 @@ import { Address } from '@/api/entity/Address';
 import { CarDetails } from '@/api/entity/CarDetails';
 import { CarEnquiry } from '@/api/entity/CarEnquiry';
 import { CarImages } from '@/api/entity/CarImages';
-import { RepublishCarDetails } from '@/api/entity/RepublishCars';
 import { SavedCar } from '@/api/entity/SavedCars';
 import { UserAuth } from '@/api/entity/UserAuth';
 import { sendEmailNotification } from '@/common/utils/mailService';
@@ -86,7 +85,6 @@ type CarDetailsResponseType = {
     mobileNumber: string | null;
   };
   isSaved?: boolean;
-  isRepublished?: boolean;
   isReported?: boolean;
 };
 
@@ -957,7 +955,6 @@ export const trendingCar = async (req: Request, res: Response) => {
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
     const carEnquiryRepo = AppDataSource.getRepository(CarEnquiry);
-    const republishCarDetailsRepo = AppDataSource.getRepository(RepublishCarDetails);
 
     const whereClause = {
       // subCategory: subCategory as any,
@@ -987,12 +984,9 @@ export const trendingCar = async (req: Request, res: Response) => {
       });
     }
 
-    const [republishedCars, carEnquiries] = await Promise.all([
-      republishCarDetailsRepo.find({ where: { status: 'Accepted' } }),
-      carEnquiryRepo.find({
-        where: { carId: In(cars.map((c) => c.id)) },
-      }),
-    ]);
+    const carEnquiries = await carEnquiryRepo.find({
+      where: { carId: In(cars.map((c) => c.id)) },
+    });
 
     const enquiryCounts = carEnquiries.reduce(
       (acc: any, enquiry: any) => {
@@ -1002,30 +996,14 @@ export const trendingCar = async (req: Request, res: Response) => {
       {} as Record<string, number>
     );
 
-    const allCarIds = new Set([...cars.map((c) => c.id), ...republishedCars.map((rc) => rc.carId)]);
-
-    const allCars = await carRepo.find({
-      where: {
-        id: In(Array.from(allCarIds)),
-      },
-      relations: ['address', 'carImages'],
-    });
-
-    const sortedCars = allCars.sort((a, b) => (enquiryCounts[b.id] || 0) - (enquiryCounts[a.id] || 0));
+    const sortedCars = cars.sort((a, b) => (enquiryCounts[b.id] || 0) - (enquiryCounts[a.id] || 0));
 
     const subcategoryFilteredCars = sortedCars.filter((car) => car);
 
-    // Create a map of carId to republishInfo for quick lookup
-    const republishMap = new Map(republishedCars.map((rc: any) => [rc.carId, rc]));
-
-    // Collect all user IDs (both original owners and republishers)
+    // Collect all user IDs
     const userIds = new Set<string>();
     subcategoryFilteredCars.forEach((car: any) => {
       userIds.add(car.userId);
-      const republishInfo = republishMap.get(car.id);
-      if (republishInfo) {
-        userIds.add(republishInfo.republisherId);
-      }
     });
 
     const users =
@@ -1043,11 +1021,7 @@ export const trendingCar = async (req: Request, res: Response) => {
         return true;
       }
 
-      // Check if car is republished
-      const republishInfo = republishMap.get(car.id);
-      const effectiveUserId = republishInfo ? republishInfo.republisherId : car.userId;
-
-      const carOwner = userMap.get(effectiveUserId);
+      const carOwner = userMap.get(car.userId);
       if (!carOwner) {
         return true;
       }
@@ -1071,7 +1045,7 @@ export const trendingCar = async (req: Request, res: Response) => {
       });
     }
 
-    const carsWithDetails = await mapCarsWithDetailsOptimized(filteredCars, republishedCars, userMap);
+    const carsWithDetails = await mapCarsWithDetails(filteredCars, userMap);
 
     const validCarsWithDetails = carsWithDetails.filter((car) => car !== null);
 
@@ -1098,60 +1072,29 @@ export const trendingCar = async (req: Request, res: Response) => {
   }
 };
 
-// Optimized helper function to map properties with complete details
-async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: any[], userMap: Map<string, any>) {
-  // Create a map of carId to republishInfo for quick lookup
-  const republishMap = new Map(republishedCars.map((rp) => [rp.carId, rp]));
-
+// Helper function to map cars with complete details
+async function mapCarsWithDetails(cars: CarDetails[], userMap: Map<string, any>) {
   return Promise.all(
     cars.map(async (car: CarDetails) => {
       try {
         const carResponse = await mapCarDetailsResponse(car);
-        const republishInfo = republishMap.get(car.id);
-
-        const originalOwner = userMap.get(car.userId);
-
-        let republisher = null;
-        if (republishInfo) {
-          republisher = userMap.get(republishInfo.republisherId);
-        }
-
-        const primaryOwner = republisher || originalOwner;
+        const carOwner = userMap.get(car.userId);
 
         const userProfileImage =
           'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
 
         const ownerData = {
-          id: primaryOwner?.id || (republishInfo ? republishInfo.republisherId : car.userId) || null,
-          fullName: primaryOwner?.fullName || 'Unknown Owner',
-          userType: primaryOwner?.userType || 'Unknown',
-          userProfileKey: primaryOwner?.userProfileKey || null,
-          mobileNumber: primaryOwner?.mobileNumber || null,
+          id: carOwner?.id || car.userId || null,
+          fullName: carOwner?.fullName || 'Unknown Owner',
+          userType: carOwner?.userType || 'Unknown',
+          userProfileKey: carOwner?.userProfileKey || null,
+          mobileNumber: carOwner?.mobileNumber || null,
           userProfile: userProfileImage,
         };
 
         return {
           ...carResponse,
           owner: ownerData,
-          isRepublished: !!republishInfo,
-          republishDetails: republishInfo
-            ? {
-                republishId: republishInfo.id,
-                republisherId: republishInfo.republisherId,
-                status: republishInfo.status,
-                republishedAt: republishInfo.createdAt,
-              }
-            : null,
-          originalOwner:
-            republishInfo && originalOwner
-              ? {
-                  id: originalOwner.id,
-                  fullName: originalOwner.fullName,
-                  userType: originalOwner.userType,
-                  userProfileKey: originalOwner.userProfileKey,
-                  mobileNumber: originalOwner.mobileNumber,
-                }
-              : null,
         };
       } catch (error) {
         console.error('Error processing car:', car.id, error);
@@ -1333,7 +1276,6 @@ export const offeringCar = async (req: Request, res: Response) => {
 
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
-    const republishCarRepo = AppDataSource.getRepository(RepublishCarDetails);
 
     const queryBuilder = carRepo
       .createQueryBuilder('car')
@@ -1411,10 +1353,6 @@ export const offeringCar = async (req: Request, res: Response) => {
 
     const userMap = new Map(users.map((user) => [user.id, user]));
 
-    const republishedCars = await republishCarRepo.find({
-      where: { status: 'Accepted' },
-    });
-
     const filteredCars = cars.filter((car) => {
       if (!userType || userType !== 'Dealer') {
         return true;
@@ -1436,49 +1374,27 @@ export const offeringCar = async (req: Request, res: Response) => {
       filteredCars.map(async (car) => {
         try {
           const carResponse = await mapCarDetailsResponse(car);
-          const republishInfo = republishedCars.find((rp) => rp.carId === car.id);
-
           const originalOwner = userMap.get(car.userId);
-          // let republisher = null;
-          // if (republishInfo) {
-          //   republisher = userMap.get(republishInfo.republisherId);
-          // }
-
-          // const primaryOwner = republisher || originalOwner;
           const userProfileImage =
             'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
 
           return {
             ...carResponse,
             ownerProfile: userProfileImage,
-            isRepublished: !!republishInfo,
-            republishDetails: republishInfo
-              ? {
-                  republishId: republishInfo.id,
-                  republisherId: republishInfo.republisherId,
-                  status: republishInfo.status,
-                  republishedAt: republishInfo.createdAt,
-                }
-              : null,
-            originalOwner:
-              republishInfo && originalOwner
-                ? {
-                    id: originalOwner.id,
-                    fullName: originalOwner.fullName,
-                    userType: originalOwner.userType,
-                    mobileNumber: originalOwner.mobileNumber,
-                    email: originalOwner.email,
-                  }
-                : null,
+            owner: originalOwner ? {
+              id: originalOwner.id,
+              fullName: originalOwner.fullName,
+              userType: originalOwner.userType,
+              mobileNumber: originalOwner.mobileNumber,
+              email: originalOwner.email,
+            } : null,
           };
         } catch (error) {
           return {
             ...car,
             ownerProfile:
               'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg',
-            isRepublished: false,
-            republishDetails: null,
-            originalOwner: null,
+            owner: null,
           };
         }
       })

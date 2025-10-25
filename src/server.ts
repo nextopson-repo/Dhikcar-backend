@@ -53,11 +53,12 @@ const app: Express = express();
 // Database configuration
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_HOST : 'gondola.proxy.rlwy.net',
-  port:14576,
-  username: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_USERNAME : 'root',
-  password: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_PASSWORD : 'OgrreFUGzPujpeHqzGKuunqZCsKvZYfX',
-  database: process.env.NODE_ENV === 'production' ? process.env.RAILWAY_DB_NAME : 'railway',
+  host: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_HOST : 'srv834.hstgr.io',
+  port:3306,
+  username: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_USERNAME : 'u595570778_dhikcar',
+  password: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PASSWORD : 'Dhikcar-web333',
+  database: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_NAME : 'u595570778_dhikcarweb333',
+
   entities: [
     UserAuth,
     CarDetails,
