@@ -25,7 +25,7 @@ export class CarDetails extends BaseEntity {
   @Column('uuid', { nullable: true })
   userId!: string | null;
 
-  @ManyToOne(() => UserAuth, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @ManyToOne(() => UserAuth, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: UserAuth;
 

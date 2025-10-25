@@ -5,7 +5,6 @@ import { Between, In, IsNull, Like, Not } from 'typeorm';
 import { Address } from '@/api/entity/Address';
 import { CarDetails } from '@/api/entity/CarDetails';
 import { CarEnquiry } from '@/api/entity/CarEnquiry';
-import { RepublishCarDetails } from '@/api/entity/RepublishCars';
 import { SavedCar } from '@/api/entity/SavedCars';
 import { UserAuth } from '@/api/entity/UserAuth';
 import { sendEmailNotification } from '@/common/utils/mailService';
@@ -82,7 +81,6 @@ type CarDetailsResponseType = {
     mobileNumber: string | null;
   };
   isSaved?: boolean;
-  isRepublished?: boolean;
   isReported?: boolean;
 };
 
@@ -458,11 +456,11 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
     }
 
     if (isSale !== undefined) {
-      queryBuilder.andWhere('property.isSale = :isSale', { isSale });
+      queryBuilder.andWhere('car.isSale = :isSale', { isSale });
     }
 
     if (carTypes && carTypes.length > 0) {
-      queryBuilder.andWhere('car.subCategory IN (:...carTypes)', { carTypes });
+      queryBuilder.andWhere('car.bodyType IN (:...carTypes)', { carTypes });
     }
 
     if (priceRange) {
@@ -477,8 +475,8 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
 
     if (!cars || cars.length === 0) {
       return res.status(200).json({
-        message: 'No properties found for the specified IDs',
-        properties: [],
+        message: 'No cars found for the specified IDs',
+        cars: [],
         totalCount: 0,
         filteredCount: 0,
       });
@@ -489,7 +487,7 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
         try {
           const carResponse = await mapCarDetailsResponse(car);
 
-          // Get property enquiries for this property
+          // Get car enquiries for this car
           const carEnquiries = await carEnquiryRepo.find({
             where: { carId: car.id },
             order: { createdAt: 'DESC' },
@@ -503,7 +501,7 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
           return {
             ...carResponse,
             enquiries: {
-              viewProperty: carEnquiries.length,
+              viewCars: carEnquiries.length,
               calling: carEnquiries.filter((enquiry) => enquiry.calling).length,
             },
             ownerDetails: {
@@ -542,6 +540,7 @@ export const getUserCarsByIds = async (req: Request, res: Response) => {
 /**
  * Get all cars with pagination, filtering, and user type restrictions
  */
+
 export const getAllCars = async (req: Request, res: Response) => {
   try {
     const {
@@ -670,108 +669,81 @@ export const getAllCars = async (req: Request, res: Response) => {
     }
 
     const carRepo = AppDataSource.getRepository(CarDetails);
-    const userRepo = AppDataSource.getRepository(UserAuth);
 
+    // Build query builder for filtering
+    let queryBuilder = carRepo
+      .createQueryBuilder('car')
+      .leftJoinAndSelect('car.address', 'address')
+      .leftJoinAndSelect('car.user', 'user');
 
-    // Build query with proper joins for userType filtering
-    let queryBuilder;
-    try {
-      queryBuilder = carRepo
-        .createQueryBuilder('car')
-        .leftJoinAndSelect('car.address', 'address')
-        .leftJoinAndSelect('car.user', 'user')
-        .where('car.isSold = :isSold', { isSold: false });
-
-      // Add userType filter if provided
-      if (normalizedUserType && normalizedUserType.length > 0) {
-        queryBuilder.andWhere('user.userType IN (:...userTypes)', { userTypes: normalizedUserType });
-      }
-    } catch (queryError) {
-      console.error('Error building query:', queryError);
-      return res.status(500).json({
-        success: false,
-        message: 'Database query error',
-        error: 'QUERY_BUILD_ERROR'
-      });
-    }
-
-    // Add other filters
-    if (priceRange?.min !== undefined && priceRange?.max !== undefined) {
-      queryBuilder.andWhere('car.carPrice BETWEEN :minPrice AND :maxPrice', {
+    // Apply filters
+    if (priceRange && priceRange.min && priceRange.max) {
+      queryBuilder = queryBuilder.andWhere('car.carPrice BETWEEN :minPrice AND :maxPrice', {
         minPrice: priceRange.min,
-        maxPrice: priceRange.max,
+        maxPrice: priceRange.max
       });
     }
 
-    if (brands?.length > 0) {
-      queryBuilder.andWhere('car.brand IN (:...brands)', { brands });
+    if (brands && brands.length > 0) {
+      queryBuilder = queryBuilder.andWhere('car.brand IN (:...brands)', { brands });
     }
 
-    if (model?.length > 0) {
-      queryBuilder.andWhere('car.model IN (:...models)', { models: model });
-    }
-
-    if (modelYear?.min !== undefined && modelYear?.max !== undefined) {
-      queryBuilder.andWhere('car.manufacturingYear BETWEEN :minYear AND :maxYear', {
+    if (modelYear && modelYear.min && modelYear.max) {
+      queryBuilder = queryBuilder.andWhere('car.manufacturingYear BETWEEN :minYear AND :maxYear', {
         minYear: modelYear.min,
-        maxYear: modelYear.max,
+        maxYear: modelYear.max
       });
     }
 
-    if (bodyType?.length > 0) {
-      queryBuilder.andWhere('car.bodyType IN (:...bodyTypes)', { bodyTypes: bodyType });
-    }
-
-    if (fuelType?.length > 0) {
-      queryBuilder.andWhere('car.fuelType IN (:...fuelTypes)', { fuelTypes: fuelType });
-    }
-
-    // Add location filter to query builder
-    if (location?.length > 0) {
-      queryBuilder.andWhere(
+    if (location && location.length > 0) {
+      queryBuilder = queryBuilder.andWhere(
         '(address.state IN (:...locations) OR address.city IN (:...locations))',
         { locations: location }
       );
     }
 
-    // Add search filter to query builder
-    if (search?.trim()) {
-      const searchTerm = `%${search.trim()}%`;
-      queryBuilder.andWhere(
-        '(car.carName LIKE :search OR car.description LIKE :search OR car.brand LIKE :search OR car.model LIKE :search OR address.city LIKE :search OR address.state LIKE :search OR address.locality LIKE :search)',
-        { search: searchTerm }
+    if (bodyType && bodyType.length > 0) {
+      queryBuilder = queryBuilder.andWhere('car.bodyType IN (:...bodyTypes)', { bodyTypes: bodyType });
+    }
+
+    if (fuelType && fuelType.length > 0) {
+      queryBuilder = queryBuilder.andWhere('car.fuelType IN (:...fuelTypes)', { fuelTypes: fuelType });
+    }
+
+    if (search) {
+      queryBuilder = queryBuilder.andWhere(
+        '(car.carName ILIKE :search OR car.brand ILIKE :search OR car.model ILIKE :search OR car.variant ILIKE :search OR car.description ILIKE :search)',
+        { search: `%${search}%` }
       );
     }
 
-    let totalCount: number;
-    let cars: CarDetails[];
-
-    try {
-      totalCount = await queryBuilder.getCount();
-    } catch (countError) {
-      console.error('Error getting total count:', countError);
-      return res.status(500).json({
-        success: false,
-        message: 'Database error while counting cars',
-        error: 'COUNT_ERROR'
-      });
+    // Apply userType filter
+    if (userType === 'Dealer') {
+      queryBuilder = queryBuilder.andWhere(
+        '(user.userType = :dealerType OR car.workingWithDealer = :workingWithDealer)',
+        { dealerType: 'Dealer', workingWithDealer: true }
+      );
     }
 
-    try {
-      // ✅ fetch cars with proper filtering
-      cars = await queryBuilder
-        .skip(skip)
-        .take(Number(limit))
-        .orderBy('car.createdAt', sort === 'newest' ? 'DESC' : 'ASC')
-        .getMany();
-    } catch (fetchError) {
-      console.error('Error fetching cars:', fetchError);
-      return res.status(500).json({
-        success: false,
-        message: 'Database error while fetching cars',
-        error: 'FETCH_ERROR'
-      });
+    // Apply sorting
+    if (sort === 'newest') {
+      queryBuilder = queryBuilder.orderBy('car.createdAt', 'DESC');
+    } else if (sort === 'oldest') {
+      queryBuilder = queryBuilder.orderBy('car.createdAt', 'ASC');
+    } else if (sort === 'price_low') {
+      queryBuilder = queryBuilder.orderBy('car.carPrice', 'ASC');
+    } else if (sort === 'price_high') {
+      queryBuilder = queryBuilder.orderBy('car.carPrice', 'DESC');
     }
+
+    // Get total count for pagination
+    const totalCount = await queryBuilder.getCount();
+
+    // Apply pagination
+    const cars = await queryBuilder
+      .skip(skip)
+      .take(Number(limit))
+      .getMany();
 
     if (cars.length === 0) {
       return res.status(200).json({
@@ -784,40 +756,32 @@ export const getAllCars = async (req: Request, res: Response) => {
       });
     }
 
-    // ✅ add user info manually (user is already loaded via join)
-    let carsWithUser: any[];
-    try {
-      carsWithUser = await Promise.all(
-        cars.map(async (car) => {
-          try {
-            const carResponse = await mapCarDetailsResponse(car);
-            return {
-              ...carResponse,
-              user: car.user || null,
-            };
-          } catch (carError) {
-            console.error('Error mapping car:', car.id, carError);
-            return null;
-          }
-        })
-      );
+    // Map cars with proper format including user details
+    const carsWithUrls = await Promise.all(
+      cars.map(async (car) => {
+        const carResponse = await mapCarDetailsResponse(car);
 
-      // Filter out any null values from failed processing
-      carsWithUser = carsWithUser.filter(car => car !== null);
-    } catch (mappingError) {
-      console.error('Error mapping cars:', mappingError);
-      return res.status(500).json({
-        success: false,
-        message: 'Error processing car data',
-        error: 'MAPPING_ERROR'
-      });
-    }
+        // Create response object with user details
+        const carWithUser = {
+          ...carResponse,
+          user: {
+            id: car.user.id,
+            fullName: car.user.fullName,
+            email: car.user.email,
+            mobileNumber: car.user.mobileNumber,
+            userType: car.user.userType,
+          }
+        };
+
+        return carWithUser;
+      })
+    );
 
     return res.status(200).json({
       success: true,
       message: 'Cars retrieved successfully',
-      cars: carsWithUser,
-      totalCount: totalCount,
+      cars: carsWithUrls,
+      totalCount,
       currentPage: Number(page),
       totalPages: Math.ceil(totalCount / Number(limit)),
       hasMore: skip + cars.length < totalCount,
@@ -871,10 +835,8 @@ export const trendingCar = async (req: Request, res: Response) => {
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
     const carEnquiryRepo = AppDataSource.getRepository(CarEnquiry);
-    const republishCarDetailsRepo = AppDataSource.getRepository(RepublishCarDetails);
 
     const whereClause = {
-      // subCategory: subCategory as any,
       isActive: true,
       isSold: false,
       address: {
@@ -901,12 +863,9 @@ export const trendingCar = async (req: Request, res: Response) => {
       });
     }
 
-    const [republishedCars, carEnquiries] = await Promise.all([
-      republishCarDetailsRepo.find({ where: { status: 'Accepted' } }),
-      carEnquiryRepo.find({
-        where: { carId: In(cars.map((c) => c.id)) },
-      }),
-    ]);
+    const carEnquiries = await carEnquiryRepo.find({
+      where: { carId: In(cars.map((c) => c.id)) },
+    });
 
     const enquiryCounts = carEnquiries.reduce(
       (acc: any, enquiry: any) => {
@@ -916,30 +875,14 @@ export const trendingCar = async (req: Request, res: Response) => {
       {} as Record<string, number>
     );
 
-    const allCarIds = new Set([...cars.map((c) => c.id), ...republishedCars.map((rc) => rc.carId)]);
-
-    const allCars = await carRepo.find({
-      where: {
-        id: In(Array.from(allCarIds)),
-      },
-      relations: ['address'],
-    });
-
-    const sortedCars = allCars.sort((a, b) => (enquiryCounts[b.id] || 0) - (enquiryCounts[a.id] || 0));
+    const sortedCars = cars.sort((a, b) => (enquiryCounts[b.id] || 0) - (enquiryCounts[a.id] || 0));
 
     const subcategoryFilteredCars = sortedCars.filter((car) => car);
 
-    // Create a map of carId to republishInfo for quick lookup
-    const republishMap = new Map(republishedCars.map((rc: any) => [rc.carId, rc]));
-
-    // Collect all user IDs (both original owners and republishers)
+    // Collect all user IDs
     const userIds = new Set<string>();
     subcategoryFilteredCars.forEach((car: any) => {
       userIds.add(car.userId);
-      const republishInfo = republishMap.get(car.id);
-      if (republishInfo) {
-        userIds.add(republishInfo.republisherId);
-      }
     });
 
     const users =
@@ -957,11 +900,7 @@ export const trendingCar = async (req: Request, res: Response) => {
         return true;
       }
 
-      // Check if car is republished
-      const republishInfo = republishMap.get(car.id);
-      const effectiveUserId = republishInfo ? republishInfo.republisherId : car.userId;
-
-      const carOwner = userMap.get(effectiveUserId);
+      const carOwner = userMap.get(car.userId);
       if (!carOwner) {
         return true;
       }
@@ -985,14 +924,14 @@ export const trendingCar = async (req: Request, res: Response) => {
       });
     }
 
-    const carsWithDetails = await mapCarsWithDetailsOptimized(filteredCars, republishedCars, userMap);
+    const carsWithDetails = await mapCarsWithDetails(filteredCars, userMap);
 
     const validCarsWithDetails = carsWithDetails.filter((car) => car !== null);
 
     return res.status(200).json({
       success: true,
-      message: 'Properties retrieved successfully',
-      properties: validCarsWithDetails,
+      message: 'Cars retrieved successfully',
+      cars: validCarsWithDetails,
       totalCount: sortedCars.length,
       currentPage: sanitizedPage,
       totalPages: Math.ceil(sortedCars.length / sanitizedLimit),
@@ -1012,60 +951,29 @@ export const trendingCar = async (req: Request, res: Response) => {
   }
 };
 
-// Optimized helper function to map properties with complete details
-async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: any[], userMap: Map<string, any>) {
-  // Create a map of carId to republishInfo for quick lookup
-  const republishMap = new Map(republishedCars.map((rp) => [rp.carId, rp]));
-
+// Helper function to map cars with complete details
+async function mapCarsWithDetails(cars: CarDetails[], userMap: Map<string, any>) {
   return Promise.all(
     cars.map(async (car: CarDetails) => {
       try {
         const carResponse = await mapCarDetailsResponse(car);
-        const republishInfo = republishMap.get(car.id);
-
-        const originalOwner = car.userId ? userMap.get(car.userId) : null;
-
-        let republisher = null;
-        if (republishInfo) {
-          republisher = userMap.get(republishInfo.republisherId);
-        }
-
-        const primaryOwner = republisher || originalOwner;
+        const carOwner = car.userId ? userMap.get(car.userId) : null;
 
         const userProfileImage =
           'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
 
         const ownerData = {
-          id: primaryOwner?.id || (republishInfo ? republishInfo.republisherId : car.userId) || null,
-          fullName: primaryOwner?.fullName || 'Unknown Owner',
-          userType: primaryOwner?.userType || 'Unknown',
-          userProfileUrl: primaryOwner?.userProfileUrl || null,
-          mobileNumber: primaryOwner?.mobileNumber || null,
+          id: carOwner?.id || car.userId || null,
+          fullName: carOwner?.fullName || 'Unknown Owner',
+          userType: carOwner?.userType || 'Unknown',
+          userProfileKey: carOwner?.userProfileKey || null,
+          mobileNumber: carOwner?.mobileNumber || null,
           userProfile: userProfileImage,
         };
 
         return {
           ...carResponse,
           owner: ownerData,
-          isRepublished: !!republishInfo,
-          republishDetails: republishInfo
-            ? {
-                republishId: republishInfo.id,
-                republisherId: republishInfo.republisherId,
-                status: republishInfo.status,
-                republishedAt: republishInfo.createdAt,
-              }
-            : null,
-          originalOwner:
-            republishInfo && originalOwner
-              ? {
-                  id: originalOwner.id,
-                  fullName: originalOwner.fullName,
-                  userType: originalOwner.userType,
-                  userProfileUrl: originalOwner.userProfileUrl,
-                  mobileNumber: originalOwner.mobileNumber,
-                }
-              : null,
         };
       } catch (error) {
         console.error('Error processing car:', car.id, error);
@@ -1075,148 +983,6 @@ async function mapCarsWithDetailsOptimized(cars: CarDetails[], republishedCars: 
   );
 }
 
-// Helper function to filter car based on userType and workingWithDealer
-// async function filterCarsByUserType(cars: CarDetails[], userRepo: any, userType?: string) {
-//   if (!userType || userType !== 'Owner') {
-//     return cars; // No filtering needed for non-agent users
-//   }
-
-//   const filteredCars = await Promise.all(
-//     cars.map(async (car) => {
-//       try {
-//         const carOwner = await userRepo.findOne({
-//           where: { id: car.userId },
-//           select: ['userType'],
-//         });
-
-//         // If requesting user is an agent and property owner is an owner/enduser who doesn't work with agents
-//         if (carOwner?.userType === 'Owner' || carOwner?.userType === 'EndUser') {
-//           if (car.workingWithDealer === false) {
-//             return null; // Dealer cannot see this property
-//           }
-//         }
-//         return car;
-//       } catch (error) {
-//         console.error(`Error filtering car ${car.id}:`, error);
-//         return car; // Return property if error occurs during filtering
-//       }
-//     })
-//   );
-
-//   return filteredCars.filter((car) => car !== null);
-// }
-
-// Helper function to map properties with complete details
-// async function mapCarsWithDetails(
-//   cars: CarDetails[],
-//   republishedCars: any[],
-//   userMap: Map<string, any>
-// ) {
-//   return Promise.all(
-//     cars.map(async (car) => {
-//       try {
-//         const carResponse = await mapCarResponse(car);
-//         const republishInfo = republishedCars.find((rp) => rp.carId === car.id);
-
-//         // Get original property owner
-//         let originalOwner = userMap.get(car.userId);
-
-//         // Fallback: if user not found in map, fetch individually
-//         if (!originalOwner && car.userId) {
-//           try {
-//             const userRepo = AppDataSource.getRepository(UserAuth);
-//             originalOwner = await userRepo.findOne({
-//               where: { id: car.userId },
-//               select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber'],
-//             });
-//             if (originalOwner) {
-//               userMap.set(car.userId, originalOwner);
-//             }
-//           } catch (error) {
-//             console.error(`Error fetching user ${car.userId}:`, error);
-//           }
-//         }
-
-//         // Get republisher details if property is republished
-//         let republisher = null;
-//         if (republishInfo) {
-//           republisher = userMap.get(republishInfo.republisherId);
-
-//           // Fallback: if republisher not found in map, fetch individually
-//           if (!republisher && republishInfo.republisherId) {
-//             try {
-//               const userRepo = AppDataSource.getRepository(UserAuth);
-//               republisher = await userRepo.findOne({
-//                 where: { id: republishInfo.republisherId },
-//                 select: ['id', 'fullName', 'userType', 'userProfileUrl', 'mobileNumber'],
-//               });
-//               if (republisher) {
-//                 userMap.set(republishInfo.republisherId, republisher);
-//               }
-//             } catch (error) {
-//               console.error(`Error fetching republisher ${republishInfo.republisherId}:`, error);
-//             }
-//           }
-//         }
-
-//         // Determine the primary owner (republisher if republished, otherwise original owner)
-//         const primaryOwner = republisher || originalOwner;
-
-//         // Handle user profile image for primary owner
-//         let userProfileImage =
-//           'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
-//         if (primaryOwner?.userProfileUrl) {
-//           try {
-//             const presignedUrl = await generatePresignedUrl(primaryOwner.userProfileUrl);
-//             if (presignedUrl && presignedUrl.startsWith('http')) {
-//               userProfileImage = presignedUrl;
-//             }
-//           } catch (error) {
-//             console.error('Error generating presigned URL:', error);
-//           }
-//         }
-
-//         // Ensure we always have valid owner data, even if user doesn't exist
-//         const ownerData = {
-//           id: primaryOwner?.id || car.userId || null,
-//           fullName: primaryOwner?.fullName || 'Unknown Owner',
-//           userType: primaryOwner?.userType || 'Unknown',
-//           userProfileUrl: primaryOwner?.userProfileUrl || null,
-//           mobileNumber: primaryOwner?.mobileNumber || null,
-//           userProfile: userProfileImage,
-//         };
-
-//         return {
-//           ...carResponse,
-//           owner: ownerData,
-//           isRepublished: !!republishInfo,
-//           republishDetails: republishInfo
-//             ? {
-//                 republishId: republishInfo.id,
-//                 republisherId: republishInfo.republisherId,
-//                 status: republishInfo.status,
-//                 republishedAt: republishInfo.createdAt,
-//               }
-//             : null,
-//           // Original owner details (for republished properties)
-//           originalOwner:
-//             republishInfo && originalOwner
-//               ? {
-//                   id: originalOwner.id,
-//                   fullName: originalOwner.fullName,
-//                   userType: originalOwner.userType,
-//                   userProfileUrl: originalOwner.userProfileUrl,
-//                   mobileNumber: originalOwner.mobileNumber,
-//                 }
-//               : null,
-//         };
-//       } catch (error) {
-//         console.error('Error processing car:', car.id, error);
-//         return null;
-//       }
-//     })
-//   );
-// }
 
 /**
  * Get offering cars with filtering by category, location, and user type
@@ -1247,7 +1013,6 @@ export const offeringCar = async (req: Request, res: Response) => {
 
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
-    const republishCarRepo = AppDataSource.getRepository(RepublishCarDetails);
 
     const queryBuilder = carRepo
       .createQueryBuilder('car')
@@ -1256,7 +1021,7 @@ export const offeringCar = async (req: Request, res: Response) => {
       .andWhere('car.isSold = :isSold', { isSold: false });
 
     if (filter !== 'All') {
-      queryBuilder.andWhere('car.subCategory = :subCategory', { subCategory: filter });
+      queryBuilder.andWhere('car.bodyType = :bodyType', { bodyType: filter });
     }
 
     if (isSale !== undefined) {
@@ -1282,7 +1047,7 @@ export const offeringCar = async (req: Request, res: Response) => {
         .andWhere('car.isSold = :isSold', { isSold: false });
 
       if (filter !== 'All') {
-        fallbackQueryBuilder.andWhere('car.subCategory = :subCategory', { subCategory: filter });
+        fallbackQueryBuilder.andWhere('car.bodyType = :bodyType', { bodyType: filter });
       }
 
       if (isSale !== undefined) {
@@ -1312,7 +1077,7 @@ export const offeringCar = async (req: Request, res: Response) => {
       });
     }
 
-    const userIds = [...new Set(cars.map((p) => p.userId).filter((id): id is string => id !== null))];
+    const userIds = [...new Set(cars.map((car) => car.userId).filter((id): id is string => id !== null))];
     const users =
       userIds.length > 0
         ? await userRepo.find({
@@ -1322,10 +1087,6 @@ export const offeringCar = async (req: Request, res: Response) => {
         : [];
 
     const userMap = new Map(users.map((user) => [user.id, user]));
-
-    const republishedCars = await republishCarRepo.find({
-      where: { status: 'Accepted' },
-    });
 
     const filteredCars = cars.filter((car) => {
       if (!userType || userType !== 'Dealer') {
@@ -1348,49 +1109,27 @@ export const offeringCar = async (req: Request, res: Response) => {
       filteredCars.map(async (car) => {
         try {
           const carResponse = await mapCarDetailsResponse(car);
-          const republishInfo = republishedCars.find((rp) => rp.carId === car.id);
-
           const originalOwner = car.userId ? userMap.get(car.userId) : null;
-          // let republisher = null;
-          // if (republishInfo) {
-          //   republisher = userMap.get(republishInfo.republisherId);
-          // }
-
-          // const primaryOwner = republisher || originalOwner;
           const userProfileImage =
             'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
 
           return {
             ...carResponse,
             ownerProfile: userProfileImage,
-            isRepublished: !!republishInfo,
-            republishDetails: republishInfo
-              ? {
-                  republishId: republishInfo.id,
-                  republisherId: republishInfo.republisherId,
-                  status: republishInfo.status,
-                  republishedAt: republishInfo.createdAt,
-                }
-              : null,
-            originalOwner:
-              republishInfo && originalOwner
-                ? {
-                    id: originalOwner.id,
-                    fullName: originalOwner.fullName,
-                    userType: originalOwner.userType,
-                    mobileNumber: originalOwner.mobileNumber,
-                    email: originalOwner.email,
-                  }
-                : null,
+            owner: originalOwner ? {
+              id: originalOwner.id,
+              fullName: originalOwner.fullName,
+              userType: originalOwner.userType,
+              mobileNumber: originalOwner.mobileNumber,
+              email: originalOwner.email,
+            } : null,
           };
         } catch (error) {
           return {
             ...car,
             ownerProfile:
               'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg',
-            isRepublished: false,
-            republishDetails: null,
-            originalOwner: null,
+            owner: null,
           };
         }
       })
@@ -1406,8 +1145,8 @@ export const offeringCar = async (req: Request, res: Response) => {
             .where('car.isActive = :isActive', { isActive: true })
             .andWhere('car.isSold = :isSold', { isSold: false })
             .andWhere(
-              filter !== 'All' ? 'car.subCategory = :subCategory' : '1=1',
-              filter !== 'All' ? { subCategory: filter } : {}
+              filter !== 'All' ? 'car.bodyType = :bodyType' : '1=1',
+              filter !== 'All' ? { bodyType: filter } : {}
             )
             // .andWhere(
             //   isSale !== undefined ? 'car.isSale = :isSale' : '1=1',
@@ -1953,9 +1692,9 @@ export const getCarFilterData = async (req: Request, res: Response) => {
   try {
     // const { state, city, locality } = req.body;
 
-    // Get unique property types
+    // Get unique car body types
     const carTypes = await CarDetails.createQueryBuilder('car')
-      .select('DISTINCT car.subCategory', 'subCategory')
+      .select('DISTINCT car.bodyType', 'bodyType')
       .where('car.isActive = :isActive', { isActive: true })
       .getRawMany();
 
@@ -1969,16 +1708,13 @@ export const getCarFilterData = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       data: {
-        propertyTypes: carTypes.map((pt) => pt.subCategory),
-        // furnishingTypes: furnishingTypes.map((ft) => ft.furnishing),
-        // bhkTypes: bhkTypes.map((bt) => `${bt.bhks} BHK`),
+        carTypes: carTypes.map((ct) => ct.bodyType).filter(Boolean),
         priceRange: {
           min: Math.floor(priceRange.min / 1000), // Convert to thousands
           max: Math.ceil(priceRange.max / 1000),
           step: 10,
         },
         listedBy: ['Dealer', 'Owner', 'EndUser'],
-        // RERAStatus: ['Approved'],
       },
     });
   } catch (error) {
@@ -2049,98 +1785,3 @@ export const updateWorkingWithOwner = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Create car report
- */
-// export const createPropertyReport = async (req: Request, res: Response) => {
-//   try {
-//     const { carId, userId, reason, description } = req.body;
-
-//     if (!carId || !userId || !reason) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Property ID, User ID, and reason are required',
-//       });
-//     }
-
-//     const carRepo = AppDataSource.getRepository(Property);
-//     const userRepo = AppDataSource.getRepository(UserAuth);
-//     const reportRepo = AppDataSource.getRepository(PropertyReport);
-
-//     // Check if car exists
-//     const car = await carRepo.findOne({
-//       where: { id: carId },
-//     });
-
-//     if (!car) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Property not found',
-//       });
-//     }
-
-//     // Check if user exists
-//     const user = await userRepo.findOne({
-//       where: { id: userId },
-//     });
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'User not found',
-//       });
-//     }
-
-//     // Check if user is trying to report their own car
-//     if (car.userId === userId) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'You cannot report your own car',
-//       });
-//     }
-
-//     // Check if user has already reported this car
-//     const existingReport = await reportRepo.findOne({
-//       where: { carId, reporterId: userId },
-//     });
-
-//     if (existingReport) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'You have already reported this car',
-//       });
-//     }
-
-//     // Create the report
-//     const carReport = new PropertyReport();
-//     carReport.carId = carId;
-//     carReport.reporterId = userId;
-//     carReport.reason = reason;
-//     carReport.description = description || null;
-//     carReport.status = PropertyReportStatus.PENDING;
-//     carReport.createdBy = userId;
-//     carReport.updatedBy = userId;
-
-//     const savedReport = await reportRepo.save(carReport);
-
-//     return res.status(201).json({
-//       success: true,
-//       message: 'Property reported successfully',
-//       report: {
-//         id: savedReport.id,
-//         carId: savedReport.carId,
-//         reporterId: savedReport.reporterId,
-//         reason: savedReport.reason,
-//         description: savedReport.description,
-//         status: savedReport.status,
-//         createdAt: savedReport.createdAt,
-//       },
-//     });
-//   } catch (error) {
-//     console.error('Error creating car report:', error);
-//     return res.status(500).json({
-//       success: false,
-//       message: 'Internal server error',
-//     });
-//   }
-// };

@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 
 import { BlockUser } from './BlockUser';
-// import { CarDetails } from './CarDetails';
+import { CarDetails } from './CarDetails';
 import { CarRequirement } from './CarRequirement';
 import { Connections } from './Connection';
 import { RepublishCarDetails } from './RepublishCars';
@@ -173,11 +173,8 @@ export class UserAuth extends BaseEntity {
   reportedByUsers!: UserReport[];
 
   // Property relations
-  // Keep relation for user-to-cars to enable cascade operations from user
-  // Note: The owning side is on CarDetails with userId FK
-  // import left commented at top originally; we avoid circular deps by string callback
-  @OneToMany('CarDetails', 'user')
-  carDetails!: any[];
+  @OneToMany(() => CarDetails, (carDetails) => carDetails.user)
+  carDetails!: CarDetails[];
 
   // PropertyRequirement relations
   @OneToMany(() => CarRequirement, (requirement: any) => requirement.user)
