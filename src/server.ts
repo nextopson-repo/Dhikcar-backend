@@ -52,7 +52,7 @@ const app: Express = express();
 const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
   host: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_HOST : 'srv834.hstgr.io',
-  port: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PORT : '3306',
+  port:3306,
   username: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_USERNAME : 'u595570778_dhikcar',
   password: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_PASSWORD : 'Dhikcar-web333',
   database: process.env.NODE_ENV === 'production' ? process.env.LOCAL_DB_NAME : 'u595570778_dhikcarweb333',
