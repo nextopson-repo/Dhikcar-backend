@@ -723,77 +723,118 @@ export const getAllCars = async (req: Request, res: Response) => {
 
     const carRepo = AppDataSource.getRepository(CarDetails);
 
-    // ✅ Get total count of cars
-    const totalCount = await carRepo.count();
+    // Build query builder for filtering
+    let queryBuilder = carRepo
+      .createQueryBuilder('car')
+      .leftJoinAndSelect('car.address', 'address')
+      .leftJoinAndSelect('car.carImages', 'carImages')
+      .leftJoinAndSelect('car.user', 'user');
 
-    // ✅ Get cars with relations including user
-    const cars = await carRepo.find({
-      relations: ['address', 'carImages', 'user'], // user relation added
-      skip,
-      take: Number(limit),
-      order: {
-        createdAt: sort === 'newest' ? 'DESC' : 'ASC',
-      },
-    });
+    // Apply filters
+    if (priceRange && priceRange.length === 2) {
+      queryBuilder = queryBuilder.andWhere('car.price BETWEEN :minPrice AND :maxPrice', {
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1]
+      });
+    }
+
+    if (brands && brands.length > 0) {
+      queryBuilder = queryBuilder.andWhere('car.brand IN (:...brands)', { brands });
+    }
+
+    if (modelYear) {
+      queryBuilder = queryBuilder.andWhere('car.modelYear = :modelYear', { modelYear });
+    }
+
+    if (location && location.length > 0) {
+      queryBuilder = queryBuilder.andWhere(
+        '(address.state IN (:...locations) OR address.city IN (:...locations))',
+        { locations: location }
+      );
+    }
+
+    if (bodyType && bodyType.length > 0) {
+      queryBuilder = queryBuilder.andWhere('car.bodyType IN (:...bodyTypes)', { bodyTypes: bodyType });
+    }
+
+    if (fuelType && fuelType.length > 0) {
+      queryBuilder = queryBuilder.andWhere('car.fuelType IN (:...fuelTypes)', { fuelTypes: fuelType });
+    }
+
+    if (search) {
+      queryBuilder = queryBuilder.andWhere(
+        '(car.brand ILIKE :search OR car.model ILIKE :search OR car.variant ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+
+    // Apply userType filter
+    if (userType === 'Dealer') {
+      queryBuilder = queryBuilder.andWhere(
+        '(user.userType = :dealerType OR car.workingWithDealer = :workingWithDealer)',
+        { dealerType: 'Dealer', workingWithDealer: true }
+      );
+    }
+
+    // Apply sorting
+    if (sort === 'newest') {
+      queryBuilder = queryBuilder.orderBy('car.createdAt', 'DESC');
+    } else if (sort === 'oldest') {
+      queryBuilder = queryBuilder.orderBy('car.createdAt', 'ASC');
+    } else if (sort === 'price_low') {
+      queryBuilder = queryBuilder.orderBy('car.price', 'ASC');
+    } else if (sort === 'price_high') {
+      queryBuilder = queryBuilder.orderBy('car.price', 'DESC');
+    }
+
+    // Get total count for pagination
+    const totalCount = await queryBuilder.getCount();
+
+    // Apply pagination
+    const cars = await queryBuilder
+      .skip(skip)
+      .take(Number(limit))
+      .getMany();
 
     if (!cars || cars.length === 0) {
       return res.status(200).json({
         message: 'No cars found',
-        properties: [],
+        cars: [],
         totalCount: 0,
         currentPage: Number(page),
         totalPages: 0,
         hasMore: false,
       });
     }
-    // Apply location filter if provided (since it's on related entity)
-    let filteredCars = cars;
-    if (location && location.length > 0) {
-      filteredCars = cars.filter(car => 
-        car.address && 
-        (location.includes(car.address.state) || location.includes(car.address.city))
-      );
-    }
 
-    // ✅ Filter cars based on userType and workingWithDealer
-    const filteredCars = cars.filter((car) => {
-      if (
-        userType === 'Dealer' &&
-        (car.user.userType === 'Owner' || car.user.userType === 'EndUser') &&
-        car.workingWithDealer === false
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    const validCars = filteredCars;
-
-    // ✅ Map cars with proper format including user details
+    // Map cars with proper format including user details
     const carsWithUrls = await Promise.all(
-      validCars.map(async (car) => {
+      cars.map(async (car) => {
         const carResponse = await mapCarDetailsResponse(car);
 
-        // ✅ attach user details carefully (avoid sensitive info)
-        carResponse.user = {
-          id: car.user.id,
-          fullName: car.user.fullName,
-          email: car.user.email,
-          mobileNumber: car.user.mobileNumber,
-          userType: car.user.userType,
+        // Create response object with user details
+        const carWithUser = {
+          ...carResponse,
+          user: {
+            id: car.user.id,
+            fullName: car.user.fullName,
+            email: car.user.email,
+            mobileNumber: car.user.mobileNumber,
+            userType: car.user.userType,
+          }
         };
 
-        return carResponse;
+        return carWithUser;
       })
     );
 
     return res.status(200).json({
       message: 'Cars retrieved successfully',
       cars: carsWithUrls,
-      totalCount: filteredCars.length,
+      totalCount,
       currentPage: Number(page),
-      totalPages: Math.ceil(filteredCars.length / Number(limit)),
-      hasMore: skip + filteredCars.length < totalCount,
+      totalPages: Math.ceil(totalCount / Number(limit)),
+      hasMore: skip + cars.length < totalCount,
     });
   } catch (error) {
     console.error('Error in getAllCars:', error);
