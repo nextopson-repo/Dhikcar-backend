@@ -34,7 +34,7 @@ interface UserProfileResponse {
   email: string;
   fullName: string;
   userType: string;
-  userProfileKey: string | null;
+  userProfileUrl: string | null;
   address: string;
   landmark: string;
   city: string;
@@ -176,9 +176,9 @@ export const getUserProfile = async (req: Request, res: Response) => {
     }
 
     let userProfileUrl = null;
-    if (user.userProfileKey) {
+    if (user.userProfileUrl) {
       try {
-        userProfileUrl = generateCloudinaryUrl(user.userProfileKey);
+        userProfileUrl = generateCloudinaryUrl(user.userProfileUrl);
       } catch (error) {
         console.error(`Error generating Cloudinary URL for user ${userId}:`, error);
       }
@@ -190,7 +190,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
       email: user.email || '',
       fullName: user.fullName || '',
       userType: user.userType || 'EndUser',
-      userProfileKey: user.userProfileKey,
+      userProfileUrl: user.userProfileUrl,
       address: user.address || '',
       landmark: user.landmark || '',
       city: user.city || '',
@@ -309,7 +309,7 @@ export const resendDeleteAccountOTP = async (req: Request, res: Response) => {
 //   email: string;
 //   fullName: string;
 //   userType: string;
-//   userProfileKey: string | null;
+//   userProfileUrl: string | null;
 //   address: string;
 //   landmark: string;
 //   city: string;
@@ -478,9 +478,9 @@ export const resendDeleteAccountOTP = async (req: Request, res: Response) => {
 
 //     // Generate presigned URL if profile image exists
 //     let userProfileUrl = null;
-//     if (user.userProfileKey) {
+//     if (user.userProfileUrl) {
 //       try {
-//         userProfileUrl = await generatePresignedUrl(user.userProfileKey);
+//         userProfileUrl = await generatePresignedUrl(user.userProfileUrl);
 //       } catch (error) {
 //         console.error(`Error generating presigned URL for user ${userId}:`, error);
 //       }
@@ -492,7 +492,7 @@ export const resendDeleteAccountOTP = async (req: Request, res: Response) => {
 //       email: user.email || '',
 //       fullName: user.fullName || '',
 //       userType: user.userType || 'EndUser',
-//       userProfileKey: user.userProfileKey,
+//       userProfileUrl: user.userProfileUrl,
 //       address: user.address || '',
 //       landmark: user.landmark || '',
 //       city: user.city || '',

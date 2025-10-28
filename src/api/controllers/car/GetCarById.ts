@@ -98,7 +98,7 @@ export const getCarById = async (req: Request, res: Response) => {
     // Get owner details
     const user = await userRepo.findOne({
       where: { id: foundCar.userId },
-      select: ['id', 'fullName', 'mobileNumber', 'email', 'userProfileKey', 'userType'],
+      select: ['id', 'fullName', 'mobileNumber', 'email', 'userProfileUrl', 'userType'],
     });
 
     // Map car response
@@ -372,13 +372,13 @@ export const getCarById = async (req: Request, res: Response) => {
 //       // For republished properties, get the republisher's details (the one who republished)
 //       user = await userRepo.findOne({
 //         where: { id: republishCar?.republisherId },
-//         select: ['id', 'fullName', 'mobileNumber', 'email', 'userProfileKey', 'userType'],
+//         select: ['id', 'fullName', 'mobileNumber', 'email', 'userProfileUrl', 'userType'],
 //       });
 //     } else {
 //       // For regular properties, get the original owner's details
 //       user = await userRepo.findOne({
 //         where: { id: car.userId },
-//         select: ['id', 'fullName', 'mobileNumber', 'email', 'userProfileKey', 'userType'],
+//         select: ['id', 'fullName', 'mobileNumber', 'email', 'userProfileUrl', 'userType'],
 //       });
 //     }
 
@@ -419,9 +419,9 @@ export const getCarById = async (req: Request, res: Response) => {
 //     // Handle user profile image
 //     let userProfileImage =
 //       'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
-//     if (user?.userProfileKey) {
+//     if (user?.userProfileUrl) {
 //       try {
-//         const presignedUrl = await generatePresignedUrl(user.userProfileKey);
+//         const presignedUrl = await generatePresignedUrl(user.userProfileUrl);
 //         if (presignedUrl && presignedUrl.startsWith('http')) {
 //           userProfileImage = presignedUrl;
 //         }

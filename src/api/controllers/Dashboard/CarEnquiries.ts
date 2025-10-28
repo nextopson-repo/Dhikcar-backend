@@ -163,8 +163,8 @@ export const getAllCarEnquiries = async (req: Request, res: Response) => {
         const Dealer = await userRepo.findOne({
           where: { id: enquiry?.ownerId },
         });
-        // const DealerAvatar = Dealer?.userProfileKey
-        //   ? await generatePresignedUrl(Dealer.userProfileKey)
+        // const DealerAvatar = Dealer?.userProfileUrl
+        //   ? await generatePresignedUrl(Dealer.userProfileUrl)
         //   : 'https://static.vecteezy.com/system/resources/previews/000/439/863/non_2x/vector-users-icon.jpg';
 
         return {

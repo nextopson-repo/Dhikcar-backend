@@ -99,7 +99,7 @@ const googleAuthHandler = async (req: Request, res: Response): Promise<void> => 
             userType: user.userType,
             isEmailVerified: user.isEmailVerified,
             isMobileVerified: user.isMobileVerified,
-            profilePhoto: user.userProfileKey,
+            profilePhoto: user.userProfileUrl,
             isSignedUp: !!user.userType,
             isFullyVerified: user.isFullyVerified(),
             isNewUser: !user.userType,

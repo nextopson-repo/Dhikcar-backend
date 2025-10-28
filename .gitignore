@@ -37,6 +37,5 @@ locations.csv
 *.sln
 *.sw?
 
-
 # PM2
 .pm2

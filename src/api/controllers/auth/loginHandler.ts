@@ -7,7 +7,6 @@ import { UserAuth } from '@/api/entity';
 import { BlockUser } from '@/api/entity/BlockUser';
 import { CarDetails } from '@/api/entity/CarDetails';
 import { CarEnquiry } from '@/api/entity/CarEnquiry';
-import { CarImages } from '@/api/entity/CarImages';
 import { CarReport } from '@/api/entity/CarReport';
 import { CarRequirement } from '@/api/entity/CarRequirement';
 import { Connections } from '@/api/entity/Connection';
@@ -73,10 +72,7 @@ const deleteTempUser = async (userId: string) => {
 
       // Delete all related data in the correct order to avoid foreign key constraints
 
-      // 1. Delete CarImages for this user's properties
-      if (userCarIds.length > 0) {
-        await manager.delete(CarImages, { carId: In(userCarIds) });
-      }
+      // 1. No need to delete CarImages separately as they are stored as array in CarDetails
 
       // 2. Delete CarEnquiry records that reference this user's properties
       if (userCarIds.length > 0) {
@@ -103,7 +99,7 @@ const deleteTempUser = async (userId: string) => {
       await manager.delete(RepublishCarDetails, { ownerId: user.id });
       await manager.delete(RepublishCarDetails, { republisherId: user.id });
 
-      // 8. Delete Properties (CarImages already deleted)
+      // 8. Delete CarDetails (images are stored as array within CarDetails)
       await manager.delete(CarDetails, { userId: user.id });
 
       // 9. Delete CarRequirement records

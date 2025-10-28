@@ -14,7 +14,6 @@ import {
 } from 'typeorm';
 
 import { Address } from './Address';
-import { CarImages } from './CarImages';
 import { RepublishCarDetails } from './RepublishCars';
 import { UserAuth } from './UserAuth';
 
@@ -23,10 +22,10 @@ export class CarDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column('uuid')
-  userId!: string;
+  @Column('uuid', { nullable: true })
+  userId!: string | null;
 
-  @ManyToOne(() => UserAuth, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserAuth, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: UserAuth;
 
@@ -34,12 +33,8 @@ export class CarDetails extends BaseEntity {
   @JoinColumn({ name: 'addressId' })
   address!: Address;
 
-  @OneToMany(() => CarImages, (carImages) => carImages.car, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'carImages' })
-  carImages!: CarImages[];
+  @Column({ type: 'simple-array', nullable: true })
+  carImages!: string[];
 
   @OneToMany(() => RepublishCarDetails, (republishedCarDetails) => republishedCarDetails.carDetails)
   republishedCarDetails!: RepublishCarDetails[];

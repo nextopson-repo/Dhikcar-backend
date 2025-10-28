@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: dhikcar-backend
+    env: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    # Database configuration - you'll need to add your database credentials
+    # - key: RAILWAY_DB_HOST
+    #   value: your-db-host
+    # - key: RAILWAY_DB_USERNAME
+    #   value: your-db-username
+    # - key: RAILWAY_DB_PASSWORD
+    #   value: your-db-password
+    # - key: RAILWAY_DB_NAME
+    #   value: your-db-name
+    
+    # Add your other environment variables here
+    # - key: AWS_ACCESS_KEY_ID
+    #   value: your-aws-access-key
+    # - key: AWS_SECRET_ACCESS_KEY
+    #   value: your-aws-secret-key
+    # - key: ACCESS_SECRET_KEY
+    #   value: your-jwt-secret
+    # - key: REFRESH_SECRET_KEY
+    #   value: your-refresh-secret
+    # - key: SMTP_HOST
+    #   value: your-smtp-host
+    # - key: SMTP_PORT
+    #   value: 587
+    # - key: SMTP_USER
+    #   value: your-smtp-user
+    # - key: SMTP_PASS
+    #   value: your-smtp-password
+    # - key: SMTP_FROM
+    #   value: your-email@domain.com
+    # - key: MSG91_AUTH_KEY
+    #   value: your-msg91-key
+    # - key: MSG91_SENDER_ID
+    #   value: your-sender-id
+    # - key: MSG91_TEMPLATE_ID
+    #   value: your-template-id
+    # - key: GOOGLE_CLIENT_ID
+    #   value: your-google-client-id
+    # - key: GOOGLE_CLIENT_SECRET
+    #   value: your-google-client-secret
+    # - key: GOOGLE_REDIRECT_URI
+    #   value: https://your-frontend-domain.com/auth/google/callback
+    # - key: APPLE_CLIENT_ID
+    #   value: com.yourcompany.app
+    # - key: APPLE_TEAM_ID
+    #   value: your-apple-team-id
+    # - key: APPLE_KEY_ID
+    #   value: your-apple-key-id
+    # - key: APPLE_PRIVATE_KEY
+    #   value: your-apple-private-key
+    # - key: RAZORPAY_TEST_KEY_ID
+    #   value: your-razorpay-key-id
+    # - key: RAZORPAY_TEST_KEY_SECRET
+    #   value: your-razorpay-key-secret
+    # - key: TWILIO_AUTH_TOKEN
+    #   value: your-twilio-auth-token
+    # - key: DVHOSTING_API_KEY
+    #   value: your-dvhosting-api-key

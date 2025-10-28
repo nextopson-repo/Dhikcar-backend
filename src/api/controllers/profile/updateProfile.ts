@@ -4,7 +4,7 @@ import { UserAuth } from '@/api/entity';
 import { AppDataSource } from '@/server';
 
 export const updateUserProfile = async (req: Request, res: Response) => {
-  const { userId, fullName, email, userType, userProfileKey, socialMediaLinks, address, landmark, city, pin } =
+  const { userId, fullName, email, userType, userProfileUrl, socialMediaLinks, address, landmark, city, pin } =
     req.body;
   console.log('Received update request body:', req.body);
   try {
@@ -17,7 +17,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     if (fullName) user.fullName = fullName;
     if (email) user.email = email;
     if (userType) user.userType = userType;
-    if (userProfileKey) user.userProfileKey = userProfileKey;
+    if (userProfileUrl) user.userProfileUrl = userProfileUrl;
     if (socialMediaLinks) user.socialMediaLinks = socialMediaLinks;
     if (address) user.address = address;
     if (landmark) user.landmark = landmark;

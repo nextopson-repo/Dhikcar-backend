@@ -69,7 +69,7 @@ export const sendConnectionRequest = async (req: Request, res: Response): Promis
       {
         userId: receiverId,
         message: `${requester.fullName} started following you`,
-        mediakey: requester.userProfileKey || '',
+        mediakey: requester.userProfileUrl || '',
         type: NotificationType.FOLLOW,
         user: requester.fullName,
         button: 'View Profile',
@@ -274,7 +274,7 @@ export const getBlockedUsers = async (req: Request, res: Response): Promise<Resp
     const blockedUsers = await Promise.all(
       blocks.map(async (block) => {
         const user = block.blockedUser;
-        // const profilePictureUrl = user?.userProfileKey ? await generatePresignedUrl(user.userProfileKey) : null;
+        // const profilePictureUrl = user?.userProfileUrl ? await generatePresignedUrl(user.userProfileUrl) : null;
 
         return {
           blockId: block.id,
@@ -408,11 +408,11 @@ export const getUserReports = async (req: Request, res: Response): Promise<Respo
 
     const reportsWithDetails = await Promise.all(
       reports.map(async (report) => {
-        // const reporterProfileUrl = report.reporter?.userProfileKey
-        //   ? await generatePresignedUrl(report.reporter.userProfileKey)
+        // const reporterProfileUrl = report.reporter?.userProfileUrl
+        //   ? await generatePresignedUrl(report.reporter.userProfileUrl)
         //   : null;
-        // const reportedProfileUrl = report.reportedUser?.userProfileKey
-        //   ? await generatePresignedUrl(report.reportedUser.userProfileKey)
+        // const reportedProfileUrl = report.reportedUser?.userProfileUrl
+        //   ? await generatePresignedUrl(report.reportedUser.userProfileUrl)
         //   : null;
 
         return {
@@ -527,7 +527,7 @@ export const getUserConnections = async (req: Request, res: Response): Promise<R
 
     const users = await userRepository.find({
       where: { id: In(userIds) },
-      select: ['id', 'fullName', 'userProfileKey', 'userType'],
+      select: ['id', 'fullName', 'userProfileUrl', 'userType'],
     });
 
     if (!users || users.length === 0) {
@@ -551,7 +551,7 @@ export const getUserConnections = async (req: Request, res: Response): Promise<R
           const user = users.find((user) => user.id === connection.requesterId || user.id === connection.receiverId);
           if (!user || blockedUserIds.has(user.id)) return null;
 
-          // const profilePictureUrl = user?.userProfileKey ? await generatePresignedUrl(user.userProfileKey) : null;
+          // const profilePictureUrl = user?.userProfileUrl ? await generatePresignedUrl(user.userProfileUrl) : null;
           const isMutual = userConnectionIds.has(user?.id || '');
           const isFollowing = connection.requesterId === userId;
           const isFollower = connection.receiverId === userId;
@@ -562,7 +562,7 @@ export const getUserConnections = async (req: Request, res: Response): Promise<R
             fullName: user?.fullName,
             userType: user?.userType,
             // profilePictureUrl: profilePictureUrl,
-            profileKey: user?.userProfileKey,
+            profileKey: user?.userProfileUrl,
             mutual: isMutual,
             isFollowing,
             isFollower,
@@ -655,7 +655,7 @@ export const getUserFollowers = async (req: Request, res: Response): Promise<Res
 
     const followersDetails = await userRepository.find({
       where: whereClause,
-      select: ['id', 'fullName', 'email', 'mobileNumber', 'userType', 'userProfileKey', 'createdAt', 'updatedAt'],
+      select: ['id', 'fullName', 'email', 'mobileNumber', 'userType', 'userProfileUrl', 'createdAt', 'updatedAt'],
     });
 
     // Filter followers based on connectionType if specified
@@ -684,8 +684,8 @@ export const getUserFollowers = async (req: Request, res: Response): Promise<Res
           const follower = followersDetails.find((u) => u.id === followerConnection.requesterId);
           if (!follower) return null;
 
-          // const profilePictureUrl = follower.userProfileKey
-          //   ? await generatePresignedUrl(follower.userProfileKey)
+          // const profilePictureUrl = follower.userProfileUrl
+          //   ? await generatePresignedUrl(follower.userProfileUrl)
           //   : null;
 
           const isMutual = userConnectionIds.has(follower.id);
@@ -705,7 +705,7 @@ export const getUserFollowers = async (req: Request, res: Response): Promise<Res
             isEmailVerified: follower.isEmailVerified,
             isMobileVerified: follower.isMobileVerified,
             // profilePictureUrl: profilePictureUrl,
-            userProfileKey: follower.userProfileKey,
+            userProfileUrl: follower.userProfileUrl,
             createdAt: follower.createdAt,
             updatedAt: follower.updatedAt,
 
@@ -830,7 +830,7 @@ export const getUserFollowings = async (req: Request, res: Response): Promise<Re
         'id',
         'fullName',
         'userType',
-        'userProfileKey',
+        'userProfileUrl',
         'email',
         'mobileNumber',
         'isEmailVerified',
@@ -866,8 +866,8 @@ export const getUserFollowings = async (req: Request, res: Response): Promise<Re
           const following = followingsDetails.find((u) => u.id === followingConnection.receiverId);
           if (!following) return null;
 
-          // const profilePictureUrl = following.userProfileKey
-          //   ? await generatePresignedUrl(following.userProfileKey)
+          // const profilePictureUrl = following.userProfileUrl
+          //   ? await generatePresignedUrl(following.userProfileUrl)
           //   : null;
 
           const isMutual = userConnectionIds.has(following.id);
@@ -887,7 +887,7 @@ export const getUserFollowings = async (req: Request, res: Response): Promise<Re
             isEmailVerified: following.isEmailVerified,
             isMobileVerified: following.isMobileVerified,
             // profilePictureUrl: profilePictureUrl,
-            userProfileKey: following.userProfileKey,
+            userProfileUrl: following.userProfileUrl,
             createdAt: following.createdAt,
             updatedAt: following.updatedAt,
 
@@ -1050,7 +1050,7 @@ export const ConnectionsSuggestionController = async (req: Request, res: Respons
         id: user.id,
         fullName: user.fullName,
         userType: user.userType,
-        // profilePictureUrl: user.userProfileKey ? await generatePresignedUrl(user.userProfileKey) : null,
+        // profilePictureUrl: user.userProfileUrl ? await generatePresignedUrl(user.userProfileUrl) : null,
       }))
     );
 
