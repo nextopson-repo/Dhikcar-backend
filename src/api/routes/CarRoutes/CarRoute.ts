@@ -36,6 +36,7 @@ import {
   uploadRateLimiter,
 } from '@/common/middleware/rateLimiter';
 import { uploadCarImagesController } from '@/api/controllers/car/uploadCarImages';
+import { authenticate } from '@/api/middlewares/auth/Authenticate';
 import multer from 'multer';
 
 const router = Router();
@@ -64,8 +65,8 @@ router.post('/delete-car', strictRateLimiter, asyncHandler(deleteCar));
 router.post('/update-is-sold', strictRateLimiter, asyncHandler(updateIsSold));
 router.post('/update-car-status', strictRateLimiter, asyncHandler(updateCarStatus));
 
-// Car creation with specific rate limiting and file upload support
-router.post('/create-update', carCreationRateLimiter, upload.array('carImages', 10), asyncHandler(createOrUpdateCar));
+// Car creation with authentication, specific rate limiting and file upload support
+router.post('/create-update', authenticate, carCreationRateLimiter, upload.array('carImages', 10), asyncHandler(createOrUpdateCar));
 
 // File upload endpoints with upload rate limiting
 router.post('/upload-car-images', uploadRateLimiter, upload.single('file'), asyncHandler(uploadCarImagesController));

@@ -23,7 +23,6 @@ type RequestUser = {
 export interface CarRequest extends Omit<Request, 'user'> {
   body: {
     carId?: string;
-    userId: string;
     addressState?: string;
     addressCity?: string;
     addressLocality?: string;
@@ -136,7 +135,6 @@ async function uploadImageToCloudinary(file: Express.Multer.File, userId: string
 export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
   const {
     carId,
-    userId,
     addressState,
     addressCity,
     addressLocality,
@@ -156,6 +154,16 @@ export const createOrUpdateCar = async (req: CarRequest, res: Response) => {
     isSale,
     title: requestTitle,
   } = req.body;
+
+  // Extract userId from token (req.user is populated by auth middleware)
+  const userId = req.user?.id;
+  
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'User not authenticated. Please provide a valid token.',
+    });
+  }
 
   const uploadedFiles = req.files as Express.Multer.File[] || [];
 
