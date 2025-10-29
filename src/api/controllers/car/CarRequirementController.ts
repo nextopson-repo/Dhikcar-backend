@@ -214,16 +214,16 @@ export const createOrUpdateCarRequirement = async (req: Request, res: Response) 
  */
 export const getAllCarRequirements = async (req: Request, res: Response) => {
   try {
-    const { userId, sort, filter = {}, location = {}, connectionType } = req.body;
+    const {  sort, filter = {}, location = {}, connectionType } = req.body;
     const { page = 1, limit = 10 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
     const requirementRepo = AppDataSource.getRepository(CarRequirement);
     const userRepo = AppDataSource.getRepository(UserAuth);
 
-    if (!userId) {
-      return res.status(400).json({ success: false, message: 'User ID is required' });
-    }
+    // if (!userId) {
+    //   return res.status(400).json({ success: false, message: 'User ID is required' });
+    // }
 
     // Build where conditions
     const whereConditions: any = {

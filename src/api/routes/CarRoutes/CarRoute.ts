@@ -15,18 +15,7 @@ import {
 } from '@/api/controllers/car/CarController';
 import { createOrUpdateCar } from '@/api/controllers/car/createOrUpdateCar';
 import { getCarById } from '@/api/controllers/car/GetCarById';
-import {
-  CreateOrUpdateRequirement,
-  createRequirementEnquiry,
-  createUserRequirementsEnquiry,
-  deleteUserRequirements,
-  deleteUserRequirementsEnquiry,
-  getAllRequirements,
-  getRequirementEnquiries,
-  getUserRequirements,
-  getUserRequirementsEnquiry,
-  updateUserRequirementsFoundStatus,
-} from '@/api/controllers/car/RequirementsController';
+
 import { searchCar } from '@/api/controllers/car/SearchCar';
 import { getSubCategoryTrendingDetails, getTrendingSubCategories } from '@/api/controllers/car/trendingSubcategouries';
 import {
@@ -77,21 +66,6 @@ router.post('/get-user-cars-by-ids', asyncHandler(getUserCarsByIds));
 router.post('/get-car-leads', asyncHandler(getCarLeads));
 router.post('/share-car-email-notification', asyncHandler(shareCarEmailNotification));
 
-// Requirements endpoints with standard rate limiting
-router.post('/create-update-requirement', asyncHandler(CreateOrUpdateRequirement));
-router.post('/get-user-requirements', asyncHandler(getUserRequirements));
-router.post('/get-all-requirements', asyncHandler(getAllRequirements));
-router.post('/delete-user-requirements', strictRateLimiter, asyncHandler(deleteUserRequirements));
-router.post(
-  '/update-user-requirements-found-status',
-  strictRateLimiter,
-  asyncHandler(updateUserRequirementsFoundStatus)
-);
-router.post('/create-user-requirements-enquiry', asyncHandler(createUserRequirementsEnquiry));
-router.post('/get-user-requirements-enquiry', asyncHandler(getUserRequirementsEnquiry));
-router.post('/get-requirement-enquiries', asyncHandler(getRequirementEnquiries));
-router.post('/delete-user-requirements-enquiry', strictRateLimiter, asyncHandler(deleteUserRequirementsEnquiry));
-router.post('/create-requirement-enquiry', asyncHandler(createRequirementEnquiry));
 
 // Car offering with standard rate limiting
 router.post('/offering-Car', asyncHandler(offeringCar));
