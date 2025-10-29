@@ -2143,6 +2143,235 @@
 			]
 		},
 		{
+			"name": "Car Requirement APIs",
+			"item": [
+				{
+					"name": "Create/Update Car Requirement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"a1a906cd-b72d-4e97-9973-2e4eabf1feac\",\n  \"city\": \"Mumbai\",\n  \"locality\": \"Andheri\",\n  \"state\": \"Maharashtra\",\n  \"carName\": \"Swift\",\n  \"brand\": \"Maruti Suzuki\",\n  \"model\": \"Swift\",\n  \"variant\": \"VDI\",\n  \"fuelType\": \"Diesel\",\n  \"transmission\": \"Manual\",\n  \"bodyType\": \"Hatchback\",\n  \"ownership\": \"1st\",\n  \"manufacturingYear\": 2020,\n  \"registrationYear\": 2020,\n  \"isSale\": \"Buy\",\n  \"minPrice\": 500000,\n  \"maxPrice\": 800000,\n  \"maxKmDriven\": 50000,\n  \"seats\": 5,\n  \"description\": \"Looking for a well-maintained Swift Diesel\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car-requirement/create-update",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car-requirement",
+								"create-update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Car Requirements",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"a1a906cd-b72d-4e97-9973-2e4eabf1feac\",\n  \"sort\": \"newToOld\",\n  \"filter\": {\n    \"brands\": [\"Toyota\"],\n    \"priceRange\": {\n      \"min\": 1000000,\n      \"max\": 2000000\n    },\n    \"fuelTypes\": [\"Diesel\"],\n    \"transmissions\": [\"Manual\"],\n    \"isSale\": \"Buy\"\n  },\n  \"location\": {\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\"\n  },\n  \"connectionType\": \"Owner\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car-requirement/get-all?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car-requirement",
+								"get-all"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Car Requirements",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"a1a906cd-b72d-4e97-9973-2e4eabf1feac\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car-requirement/get-user-requirements?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car-requirement",
+								"get-user-requirements"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Car Requirement By ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"requirementId\": \"7f4bb24fe83826c05fb71626782d9c34\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car-requirement/get-by-id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car-requirement",
+								"get-by-id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Car Requirement Found Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"a1a906cd-b72d-4e97-9973-2e4eabf1feac\",\n  \"requirementId\": \"7f4bb24fe83826c05fb71626782d9c34\",\n  \"isFound\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car-requirement/update-found-status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car-requirement",
+								"update-found-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Car Requirement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"a1a906cd-b72d-4e97-9973-2e4eabf1feac\",\n  \"requirementId\": \"7f4bb24fe83826c05fb71626782d9c34\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/car-requirement/delete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car-requirement",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "http://192.168.1.6:5000/api/v1/temp/login",
 			"request": {
 				"method": "POST",

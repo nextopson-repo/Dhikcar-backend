@@ -2,13 +2,15 @@ import { randomBytes } from 'crypto';
 import {
   BaseEntity,
   BeforeInsert,
+  BeforeUpdate,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 import { Address } from './Address';
@@ -20,10 +22,6 @@ export class CarRequirement extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @OneToOne(() => Address, (address) => address.addressFor)
-  @JoinColumn({ name: 'addressId' })
-  addressId!: Address;
-
   @Column('uuid')
   userId!: string;
 
@@ -31,38 +29,54 @@ export class CarRequirement extends BaseEntity {
   @JoinColumn({ name: 'userId' })
   user!: UserAuth;
 
-  @Column('uuid', { nullable: true })
-  postId!: string;
+  @ManyToOne(() => Address, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'addressId' })
+  address!: Address;
 
   @Column({ type: 'varchar', nullable: true })
-  minBudget!: string;
+  carName!: string;
 
   @Column({ type: 'varchar', nullable: true })
-  maxBugdget!: string;
+  brand!: string;
 
-  @Column({ type: 'varchar' })
-  category!: string;
+  @Column({ type: 'varchar', nullable: true })
+  model!: string;
 
-  @Column({ type: 'varchar' })
-  subCategory!: string;
+  @Column({ type: 'varchar', nullable: true })
+  variant!: string;
 
-  // @Column({ type: 'int', nullable: true })
-  // bhks!: number;
+  @Column({ type: 'enum', enum: ['Petrol', 'Diesel', 'CNG', 'Electric'], nullable: true })
+  fuelType!: 'Petrol' | 'Diesel' | 'CNG' | 'Electric';
 
-  // @Column({ type: 'varchar', nullable: true })
-  // furnishing!: string;
+  @Column({ type: 'enum', enum: ['Manual', 'Automatic'], nullable: true })
+  transmission!: 'Manual' | 'Automatic';
 
-  @Column({ type: 'enum', enum: ['sale', 'buy'], nullable: true })
-  needFor!: 'sale' | 'buy';
+  @Column({ type: 'varchar', nullable: true })
+  bodyType!: string;
 
-  // @Column({ type: 'varchar', nullable: true })
-  // bhkRequired!: string;
+  @Column({ type: 'enum', enum: ['1st', '2nd', '3rd', '3+'], nullable: true })
+  ownership!: '1st' | '2nd' | '3rd' | '3+';
 
-  // @Column({ type: 'float', nullable: true })
-  // landArea!: number;
+  @Column({ type: 'int', nullable: true })
+  manufacturingYear!: number;
 
-  // @Column({ type: 'float', nullable: true })
-  // plotArea!: number;
+  @Column({ type: 'int', nullable: true })
+  registrationYear!: number;
+
+  @Column({ type: 'enum', enum: ['Sell', 'Buy'], nullable: true })
+  isSale!: 'Sell' | 'Buy';
+
+  @Column({ type: 'int', nullable: true })
+  minPrice!: number;
+
+  @Column({ type: 'int', nullable: true })
+  maxPrice!: number;
+
+  @Column({ type: 'int', nullable: true })
+  maxKmDriven!: number;
+
+  @Column({ type: 'int', nullable: true })
+  seats!: number;
 
   @Column({ type: 'text', nullable: true })
   description!: string;
@@ -82,14 +96,10 @@ export class CarRequirement extends BaseEntity {
   @Column({ type: 'varchar', default: 'system' })
   updatedBy!: string;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    precision: 6,
-  })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', precision: 6 })
   createdAt!: Date;
 
-  @Column({
+  @UpdateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
@@ -100,5 +110,10 @@ export class CarRequirement extends BaseEntity {
   @BeforeInsert()
   async generateUUID() {
     this.id = randomBytes(16).toString('hex');
+  }
+
+  @BeforeUpdate()
+  async updateTimestamp() {
+    // Optional: Custom update logic
   }
 }
