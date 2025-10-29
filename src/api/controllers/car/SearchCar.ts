@@ -5,7 +5,6 @@ import { Between, In } from 'typeorm';
 // import { generatePresignedUrl } from '@/api/controllers/s3/cloudinaryController';
 import { Address } from '@/api/entity/Address';
 import { CarDetails } from '@/api/entity/CarDetails';
-import { CarImages } from '@/api/entity/CarImages';
 import { Location } from '@/api/entity/Location';
 import { RepublishCarDetails } from '@/api/entity/RepublishCars';
 import { UserAuth } from '@/api/entity/UserAuth';
@@ -15,41 +14,35 @@ import { AppDataSource } from '@/server';
 const geocodingCache = new Map<string, { lat: number; lng: number; timestamp: number }>();
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
 
-// Interface for Car image with presigned URL
-interface CarImageWithUrl {
-  id: string;
-  imageKey: string;
-  presignedUrl: string;
-  imgClassifications: 'Left' | 'Right' | 'Front' | 'Back' | 'Door' | 'Roof' | 'Window' | 'Other';
-  accurencyPercent: number;
-}
-
-// Type for car response with images that have presigned URLs
+// Type for car response with simple image arrays
 type CarResponseType = {
   id: string;
-  userId: string;
+  userId: string | null;
   address: Address;
   title: string;
   description: string;
-  category: string;
-  subCategory: string;
   carName: string | null;
+  brand: string | null;
+  model: string | null;
+  variant: string | null;
+  fuelType: string;
+  transmission: string;
+  bodyType: string | null;
+  ownership: string;
+  manufacturingYear: number;
+  registrationYear: number;
   isSale: 'Sell' | 'Buy' | null;
   carPrice: number;
+  kmDriven: number;
+  seats: number;
   isSold: boolean;
-  conversion: string[] | null;
-  width: number | null;
-  height: number | null;
-  length: number | null;
-  groundHeight: number | null;
-  unit: string | null;
   isActive: boolean;
   createdBy: string;
   updatedBy: string;
   createdAt: Date;
   updatedAt: Date;
-  workingWithAgent: boolean | null;
-  carImages: CarImageWithUrl[];
+  workingWithDealer: boolean | null;
+  carImages: string[];
   enquiries?: {
     viewCar: number;
     calling: number;
@@ -83,60 +76,6 @@ interface GeocodingResponse {
 //   distance: number;
 // }
 
-// Helper to map carImages to CarImageWithUrl (with presigned URLs)
-async function mapCarImages(images: CarImages[]): Promise<CarImageWithUrl[]> {
-  try {
-    if (!images || !Array.isArray(images)) {
-      console.warn('Images is not an array or is null/undefined');
-      return [];
-    }
-
-    const mappedImages = await Promise.all(
-      images
-        .filter((img) => img && img.imageKey) // Ensure image and imageKey exist
-        .map(async (img) => {
-          try {
-            // Check if AWS environment variables are set
-            const bucketName = process.env.AWS_S3_BUCKET;
-            const region = process.env.AWS_REGION;
-
-            if (!bucketName || !region) {
-              console.warn('AWS environment variables not set, using fallback URL');
-              return {
-                id: img.id,
-                imageKey: img.imageKey,
-                presignedUrl: img.presignedUrl || `https://via.placeholder.com/400x300?text=Image+Not+Available`,
-                imgClassifications: img.imgClassifications as CarImageWithUrl['imgClassifications'],
-                accurencyPercent: img.accurencyPercent || 0,
-              };
-            }
-
-            return {
-              id: img.id,
-              imageKey: img.imageKey,
-              // presignedUrl: img.presignedUrl || (await generatePresignedUrl(img.imageKey)),
-              imgClassifications: img.imgClassifications as CarImageWithUrl['imgClassifications'],
-              accurencyPercent: img.accurencyPercent || 0,
-            };
-          } catch (error) {
-            console.error('Error generating presigned URL for image:', img.imageKey, error);
-            return {
-              id: img.id,
-              imageKey: img.imageKey,
-              presignedUrl: img.presignedUrl || 'https://via.placeholder.com/400x300?text=Image+Not+Available',
-              imgClassifications: img.imgClassifications as CarImageWithUrl['imgClassifications'],
-              accurencyPercent: img.accurencyPercent || 0,
-            };
-          }
-        })
-    );
-
-    return mappedImages.filter((img) => img !== null);
-  } catch (error) {
-    console.error('Error in mapCarImages:', error);
-    return [];
-  }
-}
 
 // Consistent mapping for a single car
 async function mapCarResponse(carDetails: CarDetails): Promise<CarResponseType> {
@@ -146,10 +85,9 @@ async function mapCarResponse(carDetails: CarDetails): Promise<CarResponseType> 
       throw new Error('Car is null or undefined');
     }
 
-    const carImages = await mapCarImages(carDetails.carImages || []);
     return {
       ...carDetails,
-      carImages,
+      carImages: carDetails.carImages || [],
     };
   } catch (error) {
     console.error('Error in CarResponse:', error);
@@ -472,7 +410,6 @@ export const searchCar = async (req: Request, res: Response) => {
     let queryBuilder = carRepo
       .createQueryBuilder('car')
       .leftJoinAndSelect('car.address', 'address')
-      .leftJoinAndSelect('car.carImages', 'carImages')
       .where('car.isActive = :isActive', { isActive: true })
       .andWhere('car.isSold = :isSold', { isSold: false });
 

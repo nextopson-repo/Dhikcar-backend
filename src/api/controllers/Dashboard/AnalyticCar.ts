@@ -126,7 +126,7 @@ export const analyticCar = async (req: CarRequest, res: Response) => {
           userId,
           createdAt: Between(start, end),
         },
-        relations: ['address', 'carImages'],
+        relations: ['address'],
       });
 
       // Get ALL cars owned by user (for sold cars and other calculations)

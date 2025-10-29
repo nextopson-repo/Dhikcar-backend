@@ -140,7 +140,7 @@ export const getAllCarEnquiries = async (req: Request, res: Response) => {
     // Fetch all car enquiries for the user (without pagination yet)
     const allEnquiries = await carEnquiryRepo.find({
       where: { userId },
-      relations: ['car'],
+      relations: ['carDetails'],
       order: { createdAt: 'DESC' },
     });
 

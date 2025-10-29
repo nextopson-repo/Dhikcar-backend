@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "cfce6455-4831-4592-b55c-ae4152c50675",
+		"_postman_id": "3e5c17b0-b631-4ac5-bbfc-1f2117434fc6",
 		"name": "Dhikcar - Complete API Collection",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "48097475",
-		"_collection_link": "https://dheerajprajapat321-9108643.postman.co/workspace/Dhiraj's-Workspace~36722425-1828-48eb-8e7c-6e799737c1ac/collection/48097475-cfce6455-4831-4592-b55c-ae4152c50675?action=share&source=collection_link&creator=48097475"
+		"_exporter_id": "38832638"
 	},
 	"item": [
 		{
@@ -13,11 +12,21 @@
 				{
 					"name": "Signup",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ0NDI4ODQ1LTAwNTEtNGQ1NS05YjcyLTFkMzY1MjY5ZDczOSIsImVtYWlsIjpudWxsLCJ1c2VyVHlwZSI6bnVsbCwiZnVsbE5hbWUiOm51bGwsIm1vYmlsZU51bWJlciI6IjgzMTk2OTcwODMiLCJ1c2VyUHJvZmlsZUtleSI6bnVsbCwicHJvZmlsZUltZyI6bnVsbCwiaWF0IjoxNzU5NTYxNzUyLCJleHAiOjE3NTk2NDgxNTJ9.7-HAFQu5FlYU3RwH0ZVIbFxH-wLQgxyw0CfYk8sVlNQ",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"fullName\": \"John Doe\",\r\n  \"email\": \"john@example.com\",\r\n  \"mobileNumber\": \"9876543210\",\r\n  \"userType\": \"Individual\"\r\n}",
+							"raw": "{\r\n  \"fullName\": \"sachin Doe\",\r\n  \"email\": \"sachin@example.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -26,10 +35,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/signup",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "signup"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Send OTP",
@@ -47,10 +64,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/send-otp",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "send-otp"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"send-otp"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Verify OTP",
@@ -59,7 +84,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"mobileNumber\": \"9876543210\",\r\n  \"emailOtp\": \"123456\",\r\n  \"mobileOtp\": \"123456\"\r\n}",
+							"raw": "{\r\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\",\r\n  \"mobileNumber\": \"9179721401\",\r\n  \"otp\": \"4636\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -68,10 +93,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/verify-otp",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "verify-otp"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-otp"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Login",
@@ -80,7 +113,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"password\": \"password123\"\r\n}",
+							"raw": "{\r\n\"mobileNumber\":\"9179721401\",\r\n\"checkBox\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -89,10 +122,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/login",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "login"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Resend Email OTP",
@@ -110,10 +151,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/resend-email-otp",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "resend-email-otp"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-email-otp"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Resend Mobile OTP",
@@ -131,10 +180,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/resend-mobile-otp",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "resend-mobile-otp"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-mobile-otp"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Google Auth",
@@ -152,10 +209,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/google-auth",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "google-auth"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"google-auth"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update User Type",
@@ -173,10 +238,52 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/update-user-type",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "update-user-type"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"update-user-type"
+							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:5000/api/v1/temp/signup",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\":\"ram\", \n    \"mobileNumber\":\"8319697087\", \n    \"userType\":\"Owner\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/v1/temp/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"temp",
+								"signup"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -190,8 +297,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/google/url?state=random_state",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "google", "url"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"google",
+								"url"
+							],
 							"query": [
 								{
 									"key": "state",
@@ -199,7 +314,8 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Google OAuth Callback",
@@ -217,10 +333,19 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/google/callback",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "google", "callback"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"google",
+								"callback"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Verify Google ID Token",
@@ -238,10 +363,19 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/google/verify-token",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "google", "verify-token"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"google",
+								"verify-token"
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -255,8 +389,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/apple/url?state=random_state",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "apple", "url"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"apple",
+								"url"
+							],
 							"query": [
 								{
 									"key": "state",
@@ -264,7 +406,8 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Apple OAuth Callback",
@@ -282,10 +425,19 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/apple/callback",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "apple", "callback"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"apple",
+								"callback"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Verify Apple ID Token",
@@ -303,15 +455,24 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/apple/verify-token",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "apple", "verify-token"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"apple",
+								"verify-token"
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Car APIs",
+			"name": "Car APIs - Cleaned",
 			"item": [
 				{
 					"name": "Create/Update Car",
@@ -321,7 +482,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{authToken}}",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFiOTI1Mjk4LWFkNjUtNGMwMS1hMWJiLWMwODA3ZjdkNjU3ZCIsImVtYWlsIjoiZGhlZXJhanByYWphcGF0MzIxQGdtYWlsLmNvbSIsInVzZXJUeXBlIjoiT3duZXIiLCJmdWxsTmFtZSI6IkRoaXJhaiBQcmFqYXBhdCIsIm1vYmlsZU51bWJlciI6IjkxNzk3MjE0MDEiLCJ1c2VyUHJvZmlsZVVybCI6bnVsbCwicHJvZmlsZUltZyI6bnVsbCwiaWF0IjoxNzYxNjM0NDg3LCJleHAiOjE3NjE3MjA4ODd9.RPG-Q30aIcKNjl2-QRKmmFiPWa4wPcdpT39iVXHXWTM",
 									"type": "string"
 								}
 							]
@@ -329,29 +490,145 @@
 						"method": "POST",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"userId\": \"8d302b3a-67f1-41b2-86b3-ebbaabbabe4c\",\r\n  \"carName\": \"Hyundai Venue Sports Hybrid\",\r\n  \"brand\": \"Hyundai\",\r\n  \"model\": \"venue\",\r\n  \"variant\": \"hybrid\",\r\n  \"fuelType\": \"Petrol\",\r\n  \"transmission\": \"automatic\",\r\n  \"bodyType\": \"hatchback\",\r\n  \"ownership\": \"2nd\",\r\n  \"manufacturingYear\": 2022,\r\n  \"registrationYear\": 2023,\r\n  \"isSale\": \"Sell\",\r\n  \"carPrice\": 1100000,\r\n  \"kmDriven\": 5000,\r\n  \"seats\": 4,\r\n  \"isSold\": false,\r\n  \"addressCity\": \"Indore\",\r\n  \"addressState\": \"Madhya Pradesh\",\r\n  \"addressLocality\": \"Vijay Nagar\",\r\n  \"carImages\": []\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "addressState",
+									"value": "Gujarat",
+									"type": "text"
+								},
+								{
+									"key": "addressCity",
+									"value": "Ahmedabad",
+									"type": "text"
+								},
+								{
+									"key": "addressLocality",
+									"value": "Satellite",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Test Multiple Images Memory Fix",
+									"type": "text"
+								},
+								{
+									"key": "carName",
+									"value": "Jaguar XF",
+									"type": "text"
+								},
+								{
+									"key": "brand",
+									"value": "Jaguar",
+									"type": "text"
+								},
+								{
+									"key": "model",
+									"value": "XF",
+									"type": "text"
+								},
+								{
+									"key": "variant",
+									"value": "Luxury",
+									"type": "text"
+								},
+								{
+									"key": "fuelType",
+									"value": "Petrol",
+									"type": "text"
+								},
+								{
+									"key": "transmission",
+									"value": "Automatic",
+									"type": "text"
+								},
+								{
+									"key": "ownership",
+									"value": "1st",
+									"type": "text"
+								},
+								{
+									"key": "manufacturingYear",
+									"value": "2022",
+									"type": "text"
+								},
+								{
+									"key": "registrationYear",
+									"value": "2022",
+									"type": "text"
+								},
+								{
+									"key": "bodyType",
+									"value": "Sedan",
+									"type": "text"
+								},
+								{
+									"key": "isSale",
+									"value": "Sell",
+									"type": "text"
+								},
+								{
+									"key": "carPrice",
+									"value": "4500000",
+									"type": "text"
+								},
+								{
+									"key": "kmDriven",
+									"value": "12000",
+									"type": "text"
+								},
+								{
+									"key": "seats",
+									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "isSold",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "isActive",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "carImages",
+									"type": "file",
+									"src": "postman-cloud:///1f0b3cac-393e-42a0-9e22-15444ece7d7c"
 								}
-							}
+							]
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/car/create-update",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "create-update"]
+							"raw": "http://localhost:5000/api/v1/car/create-update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"create-update"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Car By ID",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"carId\": \"0157c1c718b40e50\"\r\n}",
+							"raw": "{\n  \"carId\": \"36c4833213f6a9ab\",\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -360,19 +637,32 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/get-car-by-id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "get-car-by-id"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"get-car-by-id"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get User Cars",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userId\": \"a51cde5d-b41b-40d8-a480-794282ffead8\"\r\n}",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -381,8 +671,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/get-user-cars?page=1&limit=5",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "get-user-cars"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"get-user-cars"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -394,16 +691,22 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get All Cars",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userType\": \"Dealer\"\r\n}",
+							"raw": "{\n  \"userType\": \"Owner\",\n  \"sort\": \"newest\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -411,20 +714,43 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/car/getAll",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "getAll"]
+							"raw": "{{baseUrl}}/api/v1/car/getAll?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"getAll"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Search Car",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"brand\": \"Hyundai\",\r\n  \"model\": \"venue\",\r\n  \"city\": \"Indore\",\r\n  \"minPrice\": 500000,\r\n  \"maxPrice\": 1500000,\r\n  \"fuelType\": \"Petrol\",\r\n  \"transmission\": \"automatic\"\r\n}",
+							"raw": "{\n  \"brand\": \"Tata Motors\",\n  \"city\": \"Jaipur\",\n  \"minPrice\": 500000,\n  \"maxPrice\": 1000000\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -433,19 +759,32 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/search-car",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "search-car"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"search-car"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Car Filter Data",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"city\": \"Indore\"\r\n}",
+							"raw": "{\n  \"city\": \"Ahmedabad\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -454,19 +793,32 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/get-car-filter-data",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "get-car-filter-data"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"get-car-filter-data"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Trending Car",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"city\": \"Indore\"\r\n}",
+							"raw": "{\n  \"city\": \"Ahmedabad\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -475,19 +827,32 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/trending-car",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "trending-car"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"trending-car"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Trending Subcategories",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"city\": \"Indore\"\r\n}",
+							"raw": "{\n  \"city\": \"Ahmedabad\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -496,19 +861,32 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/trending-subcategories",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "trending-subcategories"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"trending-subcategories"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Subcategory Trending Details",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"subcategory\": \"hatchback\",\r\n  \"city\": \"Indore\"\r\n}",
+							"raw": "{\n  \"subcategory\": \"hatchback\",\n  \"city\": \"Ahmedabad\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -517,10 +895,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/subcategory-trending-details",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "subcategory-trending-details"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"subcategory-trending-details"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Slides",
@@ -529,10 +915,18 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/get-slides",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "get-slides"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"get-slides"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Upload Car Images",
@@ -556,10 +950,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/upload-car-images",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "upload-car-images"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"upload-car-images"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Car",
@@ -577,10 +979,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/delete-car",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "delete-car"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"delete-car"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Car Status",
@@ -598,10 +1008,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/update-car-status",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "update-car-status"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"update-car-status"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Is Sold",
@@ -619,10 +1037,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/update-is-sold",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "update-is-sold"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"update-is-sold"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get User Cars By IDs",
@@ -640,10 +1066,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/get-user-cars-by-ids",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "get-user-cars-by-ids"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"get-user-cars-by-ids"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Car Leads",
@@ -661,10 +1095,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/get-car-leads",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "get-car-leads"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"get-car-leads"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Share Car Email Notification",
@@ -682,12 +1124,1057 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/car/share-car-email-notification",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "car", "share-car-email-notification"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"car",
+								"share-car-email-notification"
+							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:5000/api/v1/temp/cars",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userId",
+									"value": "3d4edf60-b6e5-47db-95c6-185aa6c602d0",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "Test Car with Array Images",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Testing the new array-based image storage with Cloudinary.",
+									"type": "text"
+								},
+								{
+									"key": "carPrice",
+									"value": "350000",
+									"type": "text"
+								},
+								{
+									"key": "addressState",
+									"value": "Karnataka",
+									"type": "text"
+								},
+								{
+									"key": "addressCity",
+									"value": "Bangalore",
+									"type": "text"
+								},
+								{
+									"key": "addressLocality",
+									"value": "Whitefield",
+									"type": "text"
+								},
+								{
+									"key": "carName",
+									"value": "Test Car Model",
+									"type": "text"
+								},
+								{
+									"key": "isSale",
+									"value": "Sell",
+									"type": "text"
+								},
+								{
+									"key": "brand",
+									"value": "Test Brand",
+									"type": "text"
+								},
+								{
+									"key": "model",
+									"value": "Test Model",
+									"type": "text"
+								},
+								{
+									"key": "variant",
+									"value": "Test Variant",
+									"type": "text"
+								},
+								{
+									"key": "fuelType",
+									"value": "Petrol",
+									"type": "text"
+								},
+								{
+									"key": "transmission",
+									"value": "Manual",
+									"type": "text"
+								},
+								{
+									"key": "bodyType",
+									"value": "Hatchback",
+									"type": "text"
+								},
+								{
+									"key": "ownership",
+									"value": "1st",
+									"type": "text"
+								},
+								{
+									"key": "manufacturingYear",
+									"value": "2020",
+									"type": "text"
+								},
+								{
+									"key": "registrationYear",
+									"value": "2020",
+									"type": "text"
+								},
+								{
+									"key": "kmDriven",
+									"value": "25000",
+									"type": "text"
+								},
+								{
+									"key": "seats",
+									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "postman-cloud:///1f04e9e4-cfec-4650-ac93-bc1b13d9abeb"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "postman-cloud:///1effe672-afbd-4b10-8cf9-a6d9eff0c3f5"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://dhikcar-backend.onrender.com/api/v1/temp/cars",
+							"protocol": "https",
+							"host": [
+								"dhikcar-backend",
+								"onrender",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"temp",
+								"cars"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:5000/api/v1/profile/profile-edit",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMxOTc5N2M4LTlhODEtNDkzYS1iMTA4LTM3YTcwMzJjODYyYyIsImVtYWlsIjpudWxsLCJ1c2VyVHlwZSI6IkVuZFVzZXIiLCJmdWxsTmFtZSI6bnVsbCwibW9iaWxlTnVtYmVyIjoiODMxOTY5NzA4MyIsInVzZXJQcm9maWxlVXJsIjpudWxsLCJwcm9maWxlSW1nIjpudWxsLCJpYXQiOjE3NTk5OTIwOTAsImV4cCI6MTc2MDA3ODQ5MH0.0D9WTlp36casPwvvRPKcNNJv7O-62scXCvmRBYVcck0"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "fullName",
+									"value": "Test User with Image",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "testwithimage@example.com",
+									"type": "text"
+								},
+								{
+									"key": "mobileNumber",
+									"value": "8319697083",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "123 Test Street",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "Test City",
+									"type": "text"
+								},
+								{
+									"key": "state",
+									"value": "Test State",
+									"type": "text"
+								},
+								{
+									"key": "pin",
+									"value": "123456",
+									"type": "text"
+								},
+								{
+									"key": "profileImage",
+									"type": "file",
+									"src": "postman-cloud:///1effe672-afbd-4b10-8cf9-a6d9eff0c3f5"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/v1/profile/profile-edit",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"profile-edit"
+							]
+						}
+					},
+					"response": []
 				}
 			]
+		},
+		{
+			"name": "Dashboard APIs",
+			"item": [
+				{
+					"name": "Analytic Car",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\",\n  \"dateRangeType\": \"lastMonth\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/analytic-car",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"analytic-car"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Saved Cars",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/get-saved-cars",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"get-saved-cars"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Saved Car",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"carId\": \"36c4833213f6a9ab\",\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/create-saved-car",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"create-saved-car"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Car Enquiry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"carId\": \"36c4833213f6a9ab\",\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\",\n  \"Calling\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/create-car-enquiry",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"create-car-enquiry"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Car Enquiries",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/get-all-car-enquiries?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"get-all-car-enquiries"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Saved Car",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"savedCarId\": \"36c4833213f6a9ab\",\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/remove-saved-car",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"remove-saved-car"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile APIs",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/profile/get-userProfile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"get-userProfile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "fullName",
+									"value": "Updated Name",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "updated@example.com",
+									"type": "text"
+								},
+								{
+									"key": "mobileNumber",
+									"value": "9876543210",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "Updated Address",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "Updated City",
+									"type": "text"
+								},
+								{
+									"key": "state",
+									"value": "Updated State",
+									"type": "text"
+								},
+								{
+									"key": "pin",
+									"value": "123456",
+									"type": "text"
+								},
+								{
+									"key": "profileImage",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/profile/profile-update",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"profile-update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Edit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "fullName",
+									"value": "Edited Name",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "edited@example.com",
+									"type": "text"
+								},
+								{
+									"key": "mobileNumber",
+									"value": "9876543210",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "Edited Address",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "Edited City",
+									"type": "text"
+								},
+								{
+									"key": "state",
+									"value": "Edited State",
+									"type": "text"
+								},
+								{
+									"key": "pin",
+									"value": "123456",
+									"type": "text"
+								},
+								{
+									"key": "profileImage",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/profile/profile-edit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"profile-edit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\",\n  \"otp\": \"1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/profile/delete-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"delete-account"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resend Delete OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/profile/resend-delete-otp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"resend-delete-otp"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Republished Car APIs",
+			"item": [
+				{
+					"name": "Create Republisher",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\",\n  \"carId\": \"36c4833213f6a9ab\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/create",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/get-user-request",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"get-user-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"republishId\": \"republish_id_here\",\n  \"status\": \"approved\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/update-status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"update-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Car Republisher List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/car-republisher-list",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"car-republisher-list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Republished Cars",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/user-republished",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"user-republished"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Car List User Republished",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/car-list-user-republished",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"car-list-user-republished"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove from Republished",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"republishId\": \"republish_id_here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/remove",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"remove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request Mark as Sold",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"carId\": \"36c4833213f6a9ab\",\n  \"userId\": \"ab925298-ad65-4c01-a1bb-c0807f7d657d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/request-mark-as-sold",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"request-mark-as-sold"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Mark as Sold",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"republishId\": \"republish_id_here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/republished/conform-mark-as-sold",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"republished",
+								"conform-mark-as-sold"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "http://192.168.1.6:5000/api/v1/temp/login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"mobileNumber\":\"8319697087\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://192.168.1.6:5000/api/v1/temp/login",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"1",
+						"6"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"temp",
+						"login"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"variable": [
