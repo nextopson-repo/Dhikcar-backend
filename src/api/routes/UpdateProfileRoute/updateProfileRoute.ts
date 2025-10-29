@@ -9,7 +9,7 @@ import { authenticate } from '@/api/middlewares/auth/Authenticate';
 const router = express.Router();
 
 // PUT /api/users/:id
-router.post('/profile-update', updateUserProfile);
+router.post('/profile-update', authenticate, uploadProfileImage, EditUserProfile);
 router.post('/get-userProfile', getUserProfile);
 router.post('/profile-edit', authenticate, uploadProfileImage, EditUserProfile);
 router.post('/delete-account', deleteUserAccount);
