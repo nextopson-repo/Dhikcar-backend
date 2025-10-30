@@ -1353,6 +1353,292 @@
 			]
 		},
 		{
+			"name": "Temp APIs",
+			"item": [
+				{
+					"name": "Temp - Signup Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Test User\",\n  \"mobileNumber\": \"7509029741\",\n  \"userType\": \"Owner\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/signup/send-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","signup","send-otp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Signup Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Test User\",\n  \"mobileNumber\": \"7509029741\",\n  \"otp\": \"1234\",\n  \"userType\": \"Owner\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/signup/verify-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","signup","verify-otp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Login Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobileNumber\": \"7509029741\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/login/send-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","login","send-otp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Login Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobileNumber\": \"7509029741\",\n  \"otp\": \"1234\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/login/verify-otp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","login","verify-otp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Signup (Create Temp User)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Dhiraj Prajapat\",\n  \"mobileNumber\": \"7509029741\",\n  \"userType\": \"Owner\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","signup"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Login (Temp User)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobileNumber\": \"7509029741\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/users/{{tempUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","users", "{{tempUserId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Handle Real Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mobileNumber\": \"7509029741\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/handle-real-signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","handle-real-signup"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Bulk Create Users",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"users\": [\n    { \n      \"fullName\": \"Temp A\", \n      \"mobileNumber\": \"9999990001\", \n      \"userType\": \"Owner\" \n    }\n  ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/bulk-users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","bulk-users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Create Car (multipart)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "userId", "value": "{{tempUserId}}", "type": "text" },
+								{ "key": "addressState", "value": "Maharashtra", "type": "text" },
+								{ "key": "addressCity", "value": "Mumbai", "type": "text" },
+								{ "key": "addressLocality", "value": "Andheri", "type": "text" },
+								{ "key": "carName", "value": "Maruti Brezza", "type": "text" },
+								{ "key": "brand", "value": "Maruti Suzuki", "type": "text" },
+								{ "key": "model", "value": "Brezza", "type": "text" },
+								{ "key": "variant", "value": "VXi", "type": "text" },
+								{ "key": "fuelType", "value": "Petrol", "type": "text" },
+								{ "key": "transmission", "value": "Manual", "type": "text" },
+								{ "key": "bodyType", "value": "SUV", "type": "text" },
+								{ "key": "ownership", "value": "1st", "type": "text" },
+								{ "key": "manufacturingYear", "value": "2023", "type": "text" },
+								{ "key": "registrationYear", "value": "2023", "type": "text" },
+								{ "key": "kmDriven", "value": "10000", "type": "text" },
+								{ "key": "seats", "value": "5", "type": "text" },
+								{ "key": "carPrice", "value": "900000", "type": "text" },
+								{ "key": "isSale", "value": "Sell", "type": "text" },
+								{ "key": "images", "type": "file", "src": [] }
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/cars",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","cars"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Get Cars",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/cars?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","cars"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Get User Cars",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/cars/user/{{tempUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","cars","user","{{tempUserId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Delete Car",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/cars/{{tempCarId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","cars","{{tempCarId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Bulk Create Cars",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": { "mode": "raw", "raw": "{\n  \"cars\": [\n    {\n      \"userId\": \"{{tempUserId}}\",\n      \"brand\": \"Test\",\n      \"model\": \"Model\",\n      \"addressState\": \"State\",\n      \"addressCity\": \"City\",\n      \"addressLocality\": \"Locality\"\n    }\n  ]\n}", "options": { "raw": { "language": "json" } } },
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/bulk-cars",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","bulk-cars"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temp - Upload Image with Rekognition",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [ { "key": "file", "type": "file", "src": [] } ]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/temp/upload-car-images-with-rekognition",
+							"host": ["{{baseUrl}}"],
+							"path": ["api","v1","temp","upload-car-images-with-rekognition"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Dashboard APIs",
 			"item": [
 				{
@@ -2410,6 +2696,16 @@
 		{
 			"key": "baseUrl",
 			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "tempUserId",
+			"value": "17a6d843-63de-4595-9467-202585f2e56b",
+			"type": "string"
+		},
+		{
+			"key": "tempCarId",
+			"value": "car_id_here",
 			"type": "string"
 		},
 		{

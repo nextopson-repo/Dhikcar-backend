@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import cloudinary from '../controllers/s3/clodinaryConfig';
-import fs from 'fs';
 
 import { UserAuth } from '../entity/UserAuth';
 import { Address } from '../entity/Address';
@@ -246,40 +245,37 @@ export class TempCarController {
 
   
 
-      // Handle image uploads if any
+      // Handle image uploads if any (stream directly to Cloudinary)
       const carImages: string[] = [];
-      
+
       if (req.files && Array.isArray(req.files)) {
+        // Helper to upload a buffer via stream
+        const uploadBuffer = (buffer: Buffer) =>
+          new Promise<any>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: 'dhikcar/cars', resource_type: 'auto' },
+              (error, result) => {
+                if (error) return reject(error);
+                return resolve(result);
+              }
+            );
+            stream.end(buffer);
+          });
+
         for (const file of req.files) {
           try {
-            // Validate file
-            if (!file.path) {
-              console.warn('File path is missing for uploaded file');
+            if (!file.buffer) {
+              console.warn('File buffer is missing for uploaded file');
               continue;
             }
-
-            // Upload to Cloudinary
-            const result = await cloudinary.uploader.upload(file.path, {
-              folder: 'dhikcar/cars',
-              resource_type: 'auto',
-            });
-            
+            const result = await uploadBuffer(file.buffer);
             if (result && result.secure_url) {
               carImages.push(result.secure_url);
             } else {
               console.warn('Cloudinary upload did not return secure_url');
             }
-            
-            // Clean up local file
-            if (fs.existsSync(file.path)) {
-              fs.unlinkSync(file.path);
-            }
           } catch (uploadError) {
             console.error('Error uploading image to Cloudinary:', uploadError);
-            // Fallback to local path if Cloudinary upload fails
-            if (file.filename || file.path) {
-              carImages.push(file.filename || file.path);
-            }
           }
         }
       }

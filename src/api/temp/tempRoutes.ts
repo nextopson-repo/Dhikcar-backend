@@ -1,22 +1,14 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
+import cloudinary from '../controllers/s3/clodinaryConfig';
 
 import { TempAuthController } from './tempAuthController';
 import { TempCarController } from './tempCarController';
 
 const router = Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
+// Configure multer to store files in memory (no local disk writes)
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -50,26 +42,36 @@ router.post('/handle-real-signup', TempAuthController.handleRealUserSignup);
 router.post('/bulk-users', TempAuthController.bulkCreateTempUsers);
 
 // Temporary Property Routes
-router.post('/cars', upload.array('images', 10), TempCarController.createTempCar);
+router.post('/cars', upload.array('images', 10), TempCarController.createTempCar as any);
 router.get('/cars', TempCarController.getAllCars);
 router.get('/cars/user/:userId', TempCarController.getTempUserCars);
 router.delete('/cars/:carId', TempCarController.deleteTempCar);
 router.post('/bulk-cars', TempCarController.bulkCreateTempCars);
 
-// Image Upload Route with Rekognition
+// Image Upload Route with Rekognition (placeholder) - direct upload to Cloudinary
 router.post('/upload-car-images-with-rekognition', upload.single('file'), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // For now, just return the file info
-    // You can integrate with AWS Rekognition here later
+    const file = req.file as Express.Multer.File;
+    const uploadResult: any = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'dhikcar/cars', resource_type: 'auto' },
+        (error, result) => {
+          if (error) return reject(error);
+          return resolve(result);
+        }
+      );
+      stream.end(file.buffer);
+    });
+
     res.status(200).json({
       message: 'Image uploaded successfully',
       data: {
-        url: `/uploads/${req.file.filename}`,
-        key: req.file.filename,
+        url: uploadResult?.secure_url,
+        key: uploadResult?.public_id,
         imgClassifications: 'Other',
         accurencyPercent: 100,
       },
