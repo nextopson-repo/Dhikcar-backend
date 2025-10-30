@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { Between, In, IsNull, Like, Not } from 'typeorm';
 
 // import { generatePresignedUrl } from '@/api/controllers/s3/cloudinaryController';
@@ -599,6 +600,21 @@ export const getAllCars = async (req: Request, res: Response) => {
 
     const carRepo = AppDataSource.getRepository(CarDetails);
     const userRepo = AppDataSource.getRepository(UserAuth);
+    const savedCarRepo = AppDataSource.getRepository(SavedCar);
+
+    // Extract userId from Authorization token if present
+    let authUserId: string | null = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const payload: any = jwt.verify(token, process.env.ACCESS_SECRET_KEY || '');
+        authUserId = payload?.id || null;
+      } catch (err) {
+        // ignore invalid token, treat as anonymous
+        authUserId = null;
+      }
+    }
 
     // Build where conditions using TypeORM operators
     const whereConditions: any = {
@@ -708,6 +724,13 @@ export const getAllCars = async (req: Request, res: Response) => {
     }
 
     // Map cars with simple format
+    // Preload saved car IDs if user is authenticated
+    let savedCarIdsSet = new Set<string>();
+    if (authUserId) {
+      const saved = await savedCarRepo.find({ where: { userId: authUserId }, select: ['carId'] });
+      savedCarIdsSet = new Set(saved.map((s) => s.carId));
+    }
+
     const carsWithUrls = filteredCars.map((car) => {
       return {
         id: car.id,
@@ -745,7 +768,8 @@ export const getAllCars = async (req: Request, res: Response) => {
           email: car.user.email,
           mobileNumber: car.user.mobileNumber,
           userType: car.user.userType,
-        } : null
+        } : null,
+        isSaved: authUserId ? savedCarIdsSet.has(car.id) : false,
       };
     });
 

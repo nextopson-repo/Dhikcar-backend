@@ -1854,6 +1854,40 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Top Dealers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Mumbai\",\n  \"limit\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/dashboard/top-dealers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard",
+								"top-dealers"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

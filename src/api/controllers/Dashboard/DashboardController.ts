@@ -164,3 +164,60 @@ export const removeSavedCar = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message || 'Internal server error' });
   }
 };
+
+// get top dealers by city
+export const getTopDealers = async (req: Request, res: Response) => {
+  try {
+    const { city, limit } = req.body as { city?: string; limit?: number };
+
+    if (!city) {
+      return res.status(400).json({ message: 'city is required' });
+    }
+
+    const userRepo = AppDataSource.getRepository(UserAuth);
+
+    const dealers = await userRepo.find({
+      where: {
+        userType: 'Dealer',
+        city: city,
+        accountType: 'real' as any,
+      },
+      order: { createdAt: 'DESC' },
+      take: typeof limit === 'number' && limit > 0 ? limit : 20,
+      select: [
+        'id',
+        'fullName',
+        'profileImg',
+        'userProfileUrl',
+        'address',
+        'landmark',
+        'city',
+        'state',
+        'pin',
+        'mobileNumber',
+        'createdAt',
+      ],
+    });
+
+    const data = dealers.map((u) => ({
+      id: u.id,
+      name: u.fullName || '',
+      img: u.profileImg || u.userProfileUrl || null,
+      address: u.address || '',
+      landmark: u.landmark || '',
+      city: u.city || '',
+      state: u.state || '',
+      pin: u.pin || '',
+      mobileNumber: u.mobileNumber || '',
+      createdAt: u.createdAt,
+    }));
+
+    return res.status(200).json({
+      message: 'Top dealers fetched successfully',
+      data,
+    });
+  } catch (error: any) {
+    console.error('Error in getTopDealers:', error);
+    return res.status(500).json({ message: error.message || 'Internal server error' });
+  }
+};
