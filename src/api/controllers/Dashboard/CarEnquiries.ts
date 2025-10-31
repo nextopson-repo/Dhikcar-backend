@@ -171,12 +171,10 @@ export const getAllCarEnquiries = async (req: Request, res: Response) => {
           id: enquiry.id,
           DealerName: Dealer?.fullName,
           DealerRole: Dealer?.userType,
-          // DealerAvatar,
           mobileNumber: Dealer?.mobileNumber,
           timeAgo: timeAgo(enquiry.createdAt),
           carId: enquiry.carDetails?.id,
-          // carType: enquiry.carDetails?.category || '',
-          carTitle: enquiry.carDetails?.title || '',
+          carName: enquiry.carDetails?.carName || '',
           calling: enquiry.calling,
         };
       })
