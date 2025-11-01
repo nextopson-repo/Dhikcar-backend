@@ -64,6 +64,10 @@ export const createSavedCar = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Car not found' });
     }
 
+    if (!carDetails.userId) {
+      return res.status(400).json({ message: 'Car owner not found for this car' });
+    }
+
      // ✅ Duplicate check: agar already saved hai to return kar do
     const existing = await savedCarRepo.findOne({
       where: { carId, userId }
@@ -124,13 +128,30 @@ export const getSavedCars = async (req: Request, res: Response) => {
     }
     const carIds = savedCars.map((sp) => sp.carId);
     const cars = await carRepo.find({
-      where: { id: In(carIds) }
+      where: { id: In(carIds) },
+      relations: ['address', 'user']
     });
     const carMap = new Map(cars.map((p) => [p.id, p]));
-    const result = savedCars.map((sp) => ({
-      savedCar: sp,
-      property: carMap.get(sp.carId) || null,
-    }));
+    const result = savedCars.map((sp) => {
+      const car = carMap.get(sp.carId) || null;
+      const owner = car?.user || null;
+      const address = car?.address || null;
+      return {
+        savedCar: sp,
+        property: car,
+        ownerFullName: owner?.fullName || '',
+        ownerType: owner?.userType || null,
+        carAddress: address
+          ? {
+              state: address.state || '',
+              city: address.city || '',
+              locality: address.locality || '',
+              latitude: address.latitude ?? null,
+              longitude: address.longitude ?? null,
+            }
+          : null,
+      };
+    });
     return res.status(200).json({
       message: 'Saved cars retrieved successfully',
       result: {
