@@ -1,5 +1,5 @@
-import { randomBytes } from 'crypto';
-import { BaseEntity, BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { UserAuth } from './UserAuth';
 
 @Entity('transaction_table')
 export class Transaction extends BaseEntity {
@@ -9,14 +9,30 @@ export class Transaction extends BaseEntity {
   @Column('uuid')
   userId!: string;
 
-  @Column('varchar')
+  @ManyToOne(() => UserAuth, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user!: UserAuth;
+
+  @Column({ type: 'varchar', length: 100 })
   transactionId!: string;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', length: 30 })
   transactionStatus!: string;
 
   @Column('timestamp')
   transactionDate!: Date;
+
+  @Column('varchar')
+  packageName!: string;
+
+  @Column('int')
+  packagePrice!: number;
+
+  @Column('int')
+  activeDays!: number;
+
+  @Column({ type: 'int', default: 1 })
+  packageQuantity!: number;
 
   @Column({ type: 'varchar', default: 'system' })
   createdBy!: string;
@@ -24,23 +40,14 @@ export class Transaction extends BaseEntity {
   @Column({ type: 'varchar', default: 'system' })
   updatedBy!: string;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    precision: 6,
-  })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', precision: 6 })
   createdAt!: Date;
 
-  @Column({
+  @UpdateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
     precision: 6,
   })
   updatedAt!: Date;
-
-  @BeforeInsert()
-  async generateUUID() {
-    this.id = randomBytes(16).toString('hex');
-  }
 }

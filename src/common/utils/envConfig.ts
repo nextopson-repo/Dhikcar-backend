@@ -68,4 +68,11 @@ export const env = cleanEnv(process.env, {
   APPLE_TEAM_ID: str({ default: '' }),
   APPLE_KEY_ID: str({ default: '' }),
   APPLE_PRIVATE_KEY: str({ default: '' }),
+
+  // PhonePe Standard Checkout
+  PHONEPE_BASE_URL: str({ default: 'https://api-preprod.phonepe.com/apis/pg-sandbox' }),
+  PHONEPE_CLIENT_ID: str({ default: '' }),
+  PHONEPE_CLIENT_SECRET: str({ default: '' }),
+  PHONEPE_CLIENT_VERSION: str({ default: 'v1' }),
+  PHONEPE_REDIRECT_BASE_URL: str({ default: 'http://localhost:3000' }),
 });

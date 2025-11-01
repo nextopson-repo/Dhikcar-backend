@@ -27,6 +27,7 @@ import { UserAuth } from './api/entity/UserAuth';
 import { UserLocation } from './api/entity/UserLocation';
 import { UserReport } from './api/entity/UserReport';
 import { UserReview } from './api/entity/UserReview';
+import { Transaction } from './api/entity/Transactions';
 import appleOAuthRoutes from './api/routes/auth/AppleOAuthRoutes';
 import authRoutes from './api/routes/auth/AuthRoutes';
 import googleOAuthRoutes from './api/routes/auth/GoogleOAuthRoutes';
@@ -45,6 +46,7 @@ import Profile from './api/routes/UpdateProfileRoute/updateProfileRoute';
 import UserLocationRoutes from './api/routes/User/UserLocationRoutes';
 import UserStatisticsRoutes from './api/routes/User/UserStatisticsRoutes';
 import tempRoutes from './api/temp/tempRoutes';
+import TransactionRoutes from './api/routes/transactions/TransactionRoutes';
 import { initializeSocket } from './socket';
 
 const logger = pino({ name: 'server start' });
@@ -79,6 +81,7 @@ const dataSourceOptions: DataSourceOptions = {
     UserLocation,
     IndianCity,
     CarReport,
+    Transaction,
   ],
   synchronize: false,
   logging: false,
@@ -129,6 +132,7 @@ app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/user-location', UserLocationRoutes);
 app.use('/api/v1/user-statistics', UserStatisticsRoutes);
 app.use('/api/v1/temp', tempRoutes);
+app.use('/api/v1/transctions', TransactionRoutes);
 
 // Basic routes
 app.get('/', (req, res) => res.send('Welcome to Dhikcar'));

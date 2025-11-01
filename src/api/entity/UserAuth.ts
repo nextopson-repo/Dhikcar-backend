@@ -17,6 +17,7 @@ import { CarDetails } from './CarDetails';
 import { CarRequirement } from './CarRequirement';
 import { Connections } from './Connection';
 import { RepublishCarDetails } from './RepublishCars';
+import { Transaction } from './Transactions';
 import { UserReport } from './UserReport';
 import { UserReview } from './UserReview';
 
@@ -183,6 +184,10 @@ export class UserAuth extends BaseEntity {
 
   @OneToMany(() => RepublishCarDetails, (republishedCar) => republishedCar.republisher)
   republishedProperties!: RepublishCarDetails[];
+
+  // Transactions relation (one user can have many transactions)
+  @OneToMany(() => Transaction, (transaction) => transaction.user)
+  transactions!: Transaction[];
 
   @Column({
     type: 'enum',

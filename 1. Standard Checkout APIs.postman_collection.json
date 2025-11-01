@@ -1,0 +1,315 @@
+{
+	"info": {
+		"_postman_id": "06f54663-74f3-4915-8ac6-0ecf5613f5b8",
+		"name": "1. Standard Checkout APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32603786",
+		"_collection_link": "https://www.postman.com/phonepe-pg-integrations-online/phonepe-pg-phonepe-standard-checkout-online/collection/p7im9w7/1-standard-checkout-apis?action=share&source=collection_link&creator=32603786"
+	},
+	"item": [
+		{
+			"name": "Fetch Auth Token API",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "{{client_id}}",
+							"type": "text"
+						},
+						{
+							"key": "client_version",
+							"value": "{{client_version}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{client_secret}}",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://api-preprod.phonepe.com/apis/pg-sandbox/v1/oauth/token",
+					"protocol": "https",
+					"host": [
+						"api-preprod",
+						"phonepe",
+						"com"
+					],
+					"path": [
+						"apis",
+						"pg-sandbox",
+						"v1",
+						"oauth",
+						"token"
+					]
+				},
+				"description": "> This is the base API. In order to call any of the APIs, you need to get the Authorization Token from PhonePe using your Client Details provided by us. Once you pass the Client Secret, Client ID and Client Version in this API, you will get the \"Authorization Token\" in response."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Payment URL",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "O-Bearer {{access-token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"merchantOrderId\": \"newtxn123456\",\n    \"amount\": 1000,\n    \"expireAfter\": 1200,\n    \"metaInfo\": {\n        \"udf1\": \"test1\",\n        \"udf2\": \"new param2\",\n        \"udf3\": \"test3\",\n        \"udf4\": \"dummy value 4\",\n        \"udf5\": \"addition infor ref1\"\n    },\n    \"paymentFlow\": {\n        \"type\": \"PG_CHECKOUT\",\n        \"message\": \"Payment message used for collect requests\",\n        \"merchantUrls\": {\n            \"redirectUrl\": \"https://google.com\"\n        }\n    } \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api-preprod.phonepe.com/apis/pg-sandbox/checkout/v2/pay",
+					"protocol": "https",
+					"host": [
+						"api-preprod",
+						"phonepe",
+						"com"
+					],
+					"path": [
+						"apis",
+						"pg-sandbox",
+						"checkout",
+						"v2",
+						"pay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Initiate Payment",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"",
+							"",
+							"",
+							"<!DOCTYPE html>",
+							"<html lang=\"en\">",
+							"<head>",
+							"    <meta charset=\"UTF-8\">",
+							"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+							"    <title>PhonePe Payment</title>",
+							"    <script src=\"https://mercury.phonepe.com/web/bundle/checkout.js\"></script>",
+							"</head>",
+							"<body>",
+							"",
+							"    <h1>PhonePe Payment Integration</h1>",
+							"    <button id=\"payButton\">Pay Now</button>",
+							"",
+							"    <script>",
+							"        document.getElementById('payButton').addEventListener('click', function () {",
+							"            // Manually enter your PhonePe payment URL here",
+							"           var tokenUrl = 'https://mercury-uat.phonepe.com/transact/uat_v2?token={{vault:json-web-token}}'",
+							";",
+							"",
+							"            function paymentCallback(response) {",
+							"                if (response === 'USER_CANCEL') {",
+							"                    alert('Payment was cancelled by the user.');",
+							"                } else if (response === 'CONCLUDED') {",
+							"                    alert('Payment process has concluded.');",
+							"                    location.reload();",
+							"                }",
+							"            }",
+							"",
+							"            if (window.PhonePeCheckout && window.PhonePeCheckout.transact) {",
+							"                window.PhonePeCheckout.transact({",
+							"                    tokenUrl: tokenUrl,",
+							"                    callback: paymentCallback,",
+							"                    type: 'IFRAME'",
+							"                });",
+							"            } else {",
+							"                alert('PhonePeCheckout is not available.');",
+							"            }",
+							"        });",
+							"    </script>",
+							"",
+							"</body",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<!--***************************************************************************************************************-->\n<!--USE THIS AS A REFERENCE TO OPEN THE PAYMENT URL IN IFRAME MODE. THIS IS A SAMPLE HTML PAGE WITH IFRAME FUNCTION-->\n<!--***************************************************************************************************************-->\n\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>PhonePe Payment</title>\n    <script src=\"https://mercury.phonepe.com/web/bundle/checkout.js\"></script>\n</head>\n<body>\n\n<!--*******************************************************************************************************************************************************-->\n<!--ONCE THE USER CLICKS \"payButton\" USING THE CHECKOUT.JS METHOD AND BY PASSING THE PAYMENT URL PHONEPE CHECKOUT WILL BE INITIATED IN IFRAME MODE-->\n<!--*******************************************************************************************************************************************************-->\n    <h1>PhonePe Payment Integration</h1>\n    <button id=\"payButton\">Pay Now</button>\n\n    <script>\n        document.getElementById('payButton').addEventListener('click', function () {\n            // Manually enter your PhonePe payment URL here\n           var tokenUrl = 'https://mercury-uat.phonepe.com/transact/uat_v2?token={{vault:json-web-token}}' \n\n           <!--PASS THE URL WHICH YOU HAVE RECEIVED IN RESPONSE OF CREATE PAYMENT URL API HERE FOR TOKEN URL-->\n;\n\n            function paymentCallback(response) {\n                if (response === 'USER_CANCEL') {\n                    alert('Payment was cancelled by the user.');\n                } else if (response === 'CONCLUDED') {\n                    alert('Payment process has concluded.');\n                    location.reload();\n                }\n            }\n\n            if (window.PhonePeCheckout && window.PhonePeCheckout.transact) {\n                window.PhonePeCheckout.transact({\n                    tokenUrl: tokenUrl,\n                    callback: paymentCallback,\n                    type: 'IFRAME'\n                });\n            } else {\n                alert('PhonePeCheckout is not available.');\n            }\n        });\n    </script>\n\n</body",
+					"options": {
+						"raw": {
+							"language": "html"
+						}
+					}
+				},
+				"url": {
+					"raw": ""
+				},
+				"description": "To Invoke PhonePe checkout page in Iframe , merchants need to include the checkout.js script provided by PhonePe  \n(Sample code is provided below for your reference)\n\nNote: This is not an API . This will help you to launcht he PhonePe checkout in Iframe by using the payment URL which is received in response of Create Payament URL API.\n\nRefer this developer document for more information: [https://developer.phonepe.com/v1/reference/initiate-payment-using-js-standard-checkout](https://developer.phonepe.com/v1/reference/initiate-payment-using-js-standard-checkout)"
+			},
+			"response": []
+		},
+		{
+			"name": "Order Status API",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "O-Bearer {{access-token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api-preprod.phonepe.com/apis/pg-sandbox/checkout/v2/order/{{merchantOrderId}}/status",
+					"protocol": "https",
+					"host": [
+						"api-preprod",
+						"phonepe",
+						"com"
+					],
+					"path": [
+						"apis",
+						"pg-sandbox",
+						"checkout",
+						"v2",
+						"order",
+						"{{merchantOrderId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refund API",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "O-Bearer {{access-token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"merchantRefundId\": \"testrefundNUMBER445544\",\n    \"originalMerchantOrderId\": \"newtxn123456\",\n    \"amount\": 1234\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api-preprod.phonepe.com/apis/pg-sandbox/payments/v2/refund",
+					"protocol": "https",
+					"host": [
+						"api-preprod",
+						"phonepe",
+						"com"
+					],
+					"path": [
+						"apis",
+						"pg-sandbox",
+						"payments",
+						"v2",
+						"refund"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refund Status API",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "O-Bearer {{access-token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api-preprod.phonepe.com/apis/pg-sandbox/payments/v2/refund/{{merchantRefundId}}/status",
+					"protocol": "https",
+					"host": [
+						"api-preprod",
+						"phonepe",
+						"com"
+					],
+					"path": [
+						"apis",
+						"pg-sandbox",
+						"payments",
+						"v2",
+						"refund",
+						"{{merchantRefundId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
